@@ -2,10 +2,9 @@ name: gnosis-chakras
 region: sgp
 static_sites:
   - name: chakras
-    github:
-      repo: gnosistms/chakras-site
+    git:
+      repo_clone_url: https://github.com/gnosistms/chakras-site.git
       branch: main
-      deploy_on_push: true
     source_dir: /public
     output_dir: .
     index_document: index.html
