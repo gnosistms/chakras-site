@@ -1,0 +1,1149 @@
+<!doctype html>
+<html lang="vi">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chakra Roots and Flowers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #f3f4f7;
+    --panel: #ffffff;
+    --ink: #1c2230;
+    --muted: #5b6475;
+    --line: #d9dde6;
+    --accent: #b0762a;
+    --chip-white: #ffffff;
+    --chip-blue: #dbeafe;
+    --chip-pink: #fce7f3;
+    --chip-yellow: #fef9c3;
+    --chip-ink: #1c2230;
+    --focus: #2f6fd6;
+    --sel: #8cbcf0;
+    --stage: #ffffff;   /* Hans 1 Oct 2026: white background (was #151b26) */
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --ground: #0f131b; --panel: #171d29; --ink: #e6e9ef; --muted: #9aa3b5; --line: #2a3243;
+      --accent: #d9a45a; --focus: #7aa7ff; --sel: #6fa4dd;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground: #0f131b; --panel: #171d29; --ink: #e6e9ef; --muted: #9aa3b5; --line: #2a3243;
+    --accent: #d9a45a; --focus: #7aa7ff; --sel: #6fa4dd;
+  }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body { background: var(--ground); color: var(--ink); font: 14px/1.5 "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif; }
+  header h1 { font-family: "Source Serif 4", Georgia, serif; font-weight: 650; font-size: 20px; margin: 0; text-wrap: balance; }
+  header p { margin: 4px 0 0; color: var(--muted); font-size: 12.5px; }
+  .stage { position: fixed; inset: 0; background: var(--stage); overflow: hidden; }
+  .stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  .labels { position: absolute; inset: 0; pointer-events: none; }
+  .lbl { position: absolute; left: 0; top: 0; font: 500 11.5px/1.2 "IBM Plex Sans", Arial, sans-serif; color: #e9edf5; white-space: nowrap; background: rgba(21,27,38,.72); padding: 1px 4px; border-radius: 3px; }
+  .lbl.organ { color: #9fb0c9; font-weight: 400; font-size: 10.5px; }
+  .lbl.chakra { font-size: 17.25px; padding: 2px 8px; border-radius: 5px; }   /* Hans 1 Oct 2026: 150% text, twice the padding */
+  .lbl.crowded { opacity: .45; }
+  .lbl.dim { opacity: .35; }
+  .leaders { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  .leaders line { stroke: #4a5468; stroke-opacity: .6; stroke-width: 1; }
+  .leaders line.organ { stroke: #6b7790; }
+  .toolbar { position: absolute; left: 10px; top: 10px; right: 396px; display: flex; flex-wrap: wrap; gap: 6px; }
+  body.panel-off .toolbar { right: 10px; }
+  .toolbar button, .toolbar label { font: 500 12px "IBM Plex Sans", Arial, sans-serif; background: rgba(255,255,255,.92); color: #1c2230; border: 1px solid #c9ceda; border-radius: 6px; padding: 5px 9px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+  .seg { display:inline-flex; }
+  .seg button { border-radius: 0; }
+  .seg button:first-child { border-radius: 6px 0 0 6px; }
+  .seg button:last-child { border-radius: 0 6px 6px 0; border-left: 0; }
+  .toolbar button[aria-pressed="true"] { background: #dbe6fb; border-color: #6f93d6; }
+  .toolbar button:hover, .toolbar label:hover { background: #eef1f6; }
+  .toolbar button:focus-visible, .toolbar input:focus-visible { outline: 2px solid #7aa7ff; outline-offset: 1px; }
+  .loading { position: absolute; inset: 0; display: grid; place-items: center; color: #5b6475; font-size: 13px; pointer-events: none; }
+  .layers { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px 10px; font-size: 12.5px; }
+  .layers label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
+  .layers i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; border: 1px solid var(--line); }
+  .hint { position: absolute; left: 10px; bottom: 8px; color: #5b6475; font-size: 11.5px; }
+  aside { position: fixed; top: 12px; right: 12px; bottom: 12px; width: 360px; box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; z-index: 5;
+          background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 10px; align-content: start; box-shadow: 0 6px 24px rgba(0,0,0,.35); }
+  body.panel-off aside { display: none; }
+  /* Hans 2 Oct 2026: the panel folds away to the right edge (wide screens) or down to the bottom (narrow screens) */
+  .panel-fold { position: sticky; top: -14px; z-index: 2; justify-self: end; margin: -14px -14px -6px 0; width: 40px; height: 32px;
+                display: grid; place-items: center; border: 0; border-radius: 0 10px 0 8px; background: var(--panel); color: var(--muted); cursor: pointer; }
+  .panel-fold:hover { color: var(--ink); }
+  .panel-fold:focus-visible, .panel-open:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+  .panel-fold svg { width: 18px; height: 18px; transform: rotate(-90deg); }           /* points right: fold to the right edge */
+  .panel-open { position: fixed; right: 0; top: 12px; z-index: 6; display: none; align-items: center; gap: 6px; cursor: pointer;
+                font: 500 12.5px "IBM Plex Sans", Arial, sans-serif; color: var(--ink); background: var(--panel);
+                border: 1px solid var(--line); border-right: 0; border-radius: 8px 0 0 8px; padding: 8px 12px 8px 8px; box-shadow: 0 4px 16px rgba(0,0,0,.2); }
+  .panel-open svg { width: 16px; height: 16px; transform: rotate(90deg); }             /* points left: pull the panel back in */
+  body.panel-off .panel-open { display: inline-flex; }
+  @media (max-width: 860px) {
+    aside { top: auto; left: 12px; width: auto; max-height: 45vh; }
+    .toolbar { right: 10px; }
+    .hint { display: none; }
+    .panel-fold { justify-self: center; margin: -14px 0 -8px; width: 64px; height: 26px; border-radius: 0 0 10px 10px; }
+    .panel-fold svg { transform: none; }                                                /* points down: fold to the bottom */
+    .panel-open { right: auto; top: auto; left: 50%; bottom: 0; transform: translateX(-50%); border: 1px solid var(--line); border-bottom: 0;
+                  border-radius: 10px 10px 0 0; padding: 8px 14px; }
+    .panel-open svg { transform: rotate(180deg); }                                      /* points up: pull the panel back up */
+  }
+  aside h2 { font-family: "Source Serif 4", Georgia, serif; font-size: 16px; margin: 0; font-weight: 650; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12px; color: var(--muted); }
+  .legend i { display: inline-block; width: 12px; height: 12px; border: 1px solid var(--line); border-radius: 3px; vertical-align: -2px; margin-right: 5px; }
+  ol.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .item { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; cursor: pointer; display: grid; gap: 4px; background: var(--panel); }
+  .item:hover { border-color: var(--muted); }
+  .item.extra { margin-top: 10px; }
+  .item[aria-current="true"] { border-color: var(--sel); box-shadow: 0 0 0 1px var(--sel) inset; }   /* Hans 1 Oct 2026: light blue */
+  .item:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .item .top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .item b { font-weight: 600; }
+  .item .church { color: var(--muted); font-size: 12px; }
+  .chips { display: flex; gap: 4px; flex-shrink: 0; }
+  .chip { white-space: nowrap; font: 500 10.5px "IBM Plex Mono", monospace; color: var(--chip-ink); border: 1px solid #c9ceda; border-radius: 4px; padding: 1px 5px; }
+  .chip.w { background: var(--chip-white); } .chip.b { background: var(--chip-blue); } .chip.p { background: var(--chip-pink); } .chip.y { background: var(--chip-yellow); }
+  .detail { font-size: 12.5px; color: var(--muted); display: none; gap: 3px; }
+  .item[aria-current="true"] .detail { display: grid; }
+  .detail span b { color: var(--ink); font-weight: 500; }
+  .foot { font-size: 12px; color: var(--muted); }
+  .foot summary { cursor: pointer; color: var(--ink); font-weight: 500; margin-bottom: 6px; }
+  .foot p { margin: 0 0 6px; }
+  .about { font-size: 12.5px; color: var(--muted); margin: 0; }
+  .about a, .foot a { color: var(--focus); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+    <div class="stage" id="stage">
+      <canvas id="c" aria-label="Rotatable 3D model of a human figure showing the chakras"></canvas>
+      <svg class="leaders" id="leaders" aria-hidden="true"></svg>
+      <div class="labels" id="labels"></div>
+      <div class="toolbar">
+        <button type="button" id="v-front" data-i18n="front">Front</button>
+        <button type="button" id="v-side" data-i18n="side">Left side</button>
+        <label for="t-lbl-chakra"><input type="checkbox" id="t-lbl-chakra" checked> <span data-i18n="lblChakra">Chakra labels</span></label>
+        <label for="t-lbl-organ"><input type="checkbox" id="t-lbl-organ" checked> <span data-i18n="lblOrgan">Organ labels</span></label>
+        <label for="t-arm" hidden><input type="checkbox" id="t-arm" checked> <span data-i18n="arm">Hide nearer arm</span></label>   <!-- Hans 1 Oct 2026: always on, no button -->
+        <label for="t-book" hidden><input type="checkbox" id="t-book"> <span data-i18n="same">Same-height roots</span></label>   <!-- hidden at Hans's request, 1 Oct 2026 -->
+        <span class="seg" role="group" aria-label="Language"><button type="button" id="lang-vi" aria-pressed="true">VI</button><button type="button" id="lang-en" aria-pressed="false">EN</button><button type="button" id="lang-es" aria-pressed="false">ES</button></span>
+        <span class="seg" role="group" aria-label="Body"><button type="button" id="sex-m" aria-pressed="true" data-i18n="male">Male</button><button type="button" id="sex-f" aria-pressed="false" data-i18n="female">Female</button></span>
+      </div>
+      <div class="loading" id="loading" data-i18n="loading">Loading anatomy…</div>
+      <div class="hint" data-i18n="hint">Drag sideways to turn · up or down to move along the body · scroll or pinch to zoom · arrow keys work too</div>
+    </div>
+
+    <aside>
+      <button type="button" class="panel-fold" id="panel-fold" data-i18n-aria="panelHide" aria-label="Hide panel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <header>
+        <h1 data-i18n="title">Chakra roots and flowers</h1>
+        <p data-i18n="intro">Drag sideways to turn the figure, and up or down to move along it; at the top or bottom the view tilts. Scroll or pinch to zoom. Pick a chakra on the right to zoom in; click it again to zoom back out.</p>
+      </header>
+      <h2 data-i18n="seven">The chakras</h2>
+      <ol class="list" id="list"></ol>
+      <!-- Hans 1 Oct 2026: no layer controls; every layer is shown. The list is still built (hidden) so the code needs no other change. -->
+      <h2 data-i18n="layers" hidden>Anatomy layers</h2>
+      <div class="layers" id="layers" hidden></div>
+      <p class="about" data-i18n-html="about">The positions of the chakras and their stems in this graphic were determined by synthesizing descriptions from the books and lectures of Samael Aun Weor, along with the sources that he cited as references. In some cases, the precise locations were not completely clear. We have written a document explaining how we determined the locations in those difficult cases and citing all of our references. Please read the complete document <a href="index.html" target="_blank" rel="noopener">here</a>.</p>
+      <details class="foot">
+        <summary data-i18n="lic">License info</summary>
+        <p data-i18n-html="licM"><b>Male body.</b> BodyParts3D, © The Database Center for Life Science, licensed under <a href="https://creativecommons.org/licenses/by-sa/2.1/jp/deed.en" target="_blank" rel="noopener">CC Attribution-Share Alike 2.1 Japan</a>. Mitsuhashi N, Fujieda K, Tamura T, Kawamoto S, Takagi T, Okubo K. BodyParts3D: 3D structure database for anatomical concepts. <i>Nucleic Acids Res.</i> 2009;37:D782–5, <a href="https://doi.org/10.1093/nar/gkn613" target="_blank" rel="noopener">doi:10.1093/nar/gkn613</a>. Data archive: <a href="https://doi.org/10.18908/lsdba.nbdc00837-000" target="_blank" rel="noopener">doi:10.18908/lsdba.nbdc00837-000</a>. Meshes from Kevin M. Moerman's <a href="https://github.com/Kevin-Mattheus-Moerman/BodyParts3D" target="_blank" rel="noopener">BodyParts3D repository</a>, simplified for this page; the simplified meshes are under the same licence.</p>
+        <p data-i18n-html="licF"><b>Female body.</b> Kristen Browne and Heidi Schlehlein, 3D Reference Organ Set for United, Female, v1.10, Human Reference Atlas (HuBMAP), <a href="https://doi.org/10.48539/HBM637.DWBM.744" target="_blank" rel="noopener">doi:10.48539/HBM637.DWBM.744</a>, licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>; meshes simplified and combined with other models for this page, and the ends of the fallopian tubes moved a few millimetres to rest on the ovaries. Visible Human data courtesy of the U.S. National Library of Medicine.</p>
+      </details>
+    </aside>
+    <button type="button" class="panel-open" id="panel-open"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="seven">The chakras</span></button>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function () {
+  // Hans 2 Oct 2026: on phones (where the panel sits at the bottom) the panel starts folded, so the figure gets the screen
+  if (window.matchMedia('(max-width: 860px)').matches) document.body.classList.add('panel-off');
+  const canvas = document.getElementById('c');
+  const stage = document.getElementById('stage');
+  const labelsEl = document.getElementById('labels');
+  const leadersEl = document.getElementById('leaders');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xffffff);
+  const camera = new THREE.PerspectiveCamera(32, 1, 0.01, 50);
+  const controls = new THREE.OrbitControls(camera, canvas);
+  let anim = null, forceFrames = 3;     // forceFrames: draw this many more frames even if nothing in the frame key changed
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.minDistance = 0.35;
+  controls.maxDistance = 6;
+  // Navigation (Hans 2 Oct 2026): no Shift key. A sideways drag turns the figure around a vertical axis; an up-or-down drag
+  // moves the view straight up or down the body. Two fences keep the chakras in view: the crown flower may not drop out of
+  // the top 40% of the visible view, nor the root flower rise out of the bottom 40%. At a fence, the same drag tilts the
+  // view instead, to look down on the crown or up at the root; dragging back first undoes the tilt, then moves again.
+  // The same rules apply to one-finger touch and the arrow keys. Wheel and pinch still zoom (OrbitControls).
+  controls.enablePan = false;
+  controls.enableRotate = false;
+  controls.mouseButtons.LEFT = -1;
+  controls.touches.ONE = -1;                 // one finger is handled below; two fingers pinch to zoom
+  let drag = null, tiltBase = null, tiltPivot = null;   // tiltBase: the polar angle before a tilt began (null: not tilted)
+  const sph = new THREE.Spherical(), off = new THREE.Vector3(), pv = new THREE.Vector3();
+  const touchIds = new Set();
+  const CROWN_MAX = 0.4, ROOT_MIN = 0.6;     // fractions of the visible height, from the top
+  // the tilt stops 3° short of looking straight down or straight up, so the view can never turn over (Hans 2 Oct 2026)
+  const TILT_MIN_PHI = 0.05, TILT_MAX_PHI = Math.PI - 0.05;
+  function freeHeight() {                    // the part of the canvas not covered by the panel
+    const h = canvas.clientHeight || 1, a = document.querySelector('aside');
+    if (document.body.classList.contains('panel-off') || !a) return h;
+    const r = a.getBoundingClientRect(), sr = stage.getBoundingClientRect();
+    return (r.top - sr.top > 40 && r.top - sr.top < h) ? r.top - sr.top : h;
+  }
+  function fracY(p) {                        // a world point's height on screen, as a fraction of the visible height from the top
+    camera.updateMatrixWorld(); pv.copy(p).project(camera);
+    return (1 - pv.y) / 2 * (canvas.clientHeight || 1) / freeHeight();
+  }
+  const flowerAt = id => { const c = chakras.find(x => x.id === id); return c && c.openPos; };
+  const fenceHit = (crownP, rootP, dir) => dir > 0 ? fracY(crownP) > CROWN_MAX + 1e-4 : fracY(rootP) < ROOT_MIN - 1e-4;
+  function moveY(d) { camera.position.y += d; controls.target.y += d; }
+  // The tilt turns the whole view (camera and target together) about a horizontal axis through the fenced flower, so that
+  // flower stays exactly where it is on screen while the view tilts over the crown or under the root (Hans 2 Oct 2026).
+  const qa = new THREE.Quaternion(), rv = new THREE.Vector3(), hv = new THREE.Vector3();
+  const phiNow = () => { off.copy(camera.position).sub(controls.target); sph.setFromVector3(off); return sph.phi; };
+  function rotateAbout(p, axis, ang) {
+    qa.setFromAxisAngle(axis, ang);
+    camera.position.sub(p).applyQuaternion(qa).add(p); controls.target.sub(p).applyQuaternion(qa).add(p);
+    camera.lookAt(controls.target);
+  }
+  function tiltBy(a, pivot) {               // a > 0 tilts up over the head (camera rises), a < 0 down under the feet
+    const p0 = phiNow(), goal = Math.min(TILT_MAX_PHI, Math.max(TILT_MIN_PHI, p0 - a)), ang = p0 - goal;
+    if (Math.abs(ang) < 1e-9) return;
+    camera.updateMatrixWorld(); rv.setFromMatrixColumn(camera.matrixWorld, 0); rv.y = 0; rv.normalize();
+    rotateAbout(pivot, rv, ang);
+    if (Math.abs(phiNow() - goal) > Math.abs(ang)) rotateAbout(pivot, rv, -2 * ang);   // wrong way round: turn the other way
+    // keep turning about the body: slide the target along the line of sight to where it passes the vertical through the
+    // flower (the picture does not change, but later sideways drags turn around the body, not around a point beside it)
+    hv.copy(controls.target).sub(camera.position); const dh = hv.x * hv.x + hv.z * hv.z;
+    if (dh > 1e-6) {
+      const t = ((pivot.x - camera.position.x) * hv.x + (pivot.z - camera.position.z) * hv.z) / dh;
+      if (t > 0.05) controls.target.copy(camera.position).addScaledVector(hv, t);
+    }
+  }
+  function turnBy(a) {
+    off.copy(camera.position).sub(controls.target); sph.setFromVector3(off);
+    sph.theta -= a; off.setFromSpherical(sph); camera.position.copy(controls.target).add(off);
+  }
+  // dy in screen pixels: > 0 means the figure should move down (the view goes up the body), < 0 the opposite.
+  function verticalStep(dy) {
+    const h = canvas.clientHeight || 1, ang = 2 * Math.PI / h, dir = Math.sign(dy);
+    if (!dir) return;
+    let rest = Math.abs(dy);
+    off.copy(camera.position).sub(controls.target); sph.setFromVector3(off);
+    // 1. a tilt in the other direction is undone first
+    if (tiltBase !== null) {
+      const undo = (sph.phi - tiltBase) * dir;          // > 0: the current tilt is opposite to this drag
+      if (undo > 1e-6) {
+        const a = Math.min(undo, rest * ang); tiltBy(dir * a, tiltPivot); rest -= a / ang;
+        off.copy(camera.position).sub(controls.target); sph.setFromVector3(off);
+        if (Math.abs(sph.phi - tiltBase) < 1e-4) { tiltBase = null; tiltPivot = null; }
+      }
+    }
+    if (rest <= 0) return;
+    const crownP = flowerAt('sahasrara'), rootP = flowerAt('muladhara');
+    // 2. move along the body, as far as the fence allows (only when not tilted)
+    if (tiltBase === null && crownP && rootP && !fenceHit(crownP, rootP, dir)) {
+      const perPx = off.length() * Math.tan(camera.fov * Math.PI / 360) * 2 / freeHeight();
+      const full = rest * perPx * dir;
+      moveY(full);
+      if (fenceHit(crownP, rootP, dir)) {                // overshot: back off to the fence (bisection)
+        moveY(-full); let lo = 0, hi = 1;
+        for (let k = 0; k < 18; k++) { const m = (lo + hi) / 2; moveY(full * m); if (fenceHit(crownP, rootP, dir)) hi = m; else lo = m; moveY(-full * m); }
+        moveY(full * lo); rest *= (1 - lo);
+      } else rest = 0;
+    } else if (!crownP || !rootP) {                     // before the model has loaded: just move
+      moveY(rest * 0.002 * dir); rest = 0;
+    }
+    // 3. at a fence: tilt with what is left of the drag
+    if (rest > 0) {
+      if (tiltBase === null) {
+        off.copy(camera.position).sub(controls.target); sph.setFromVector3(off); tiltBase = sph.phi;
+        tiltPivot = (dir > 0 ? crownP : rootP).clone();
+      }
+      if (tiltPivot) tiltBy(dir * rest * ang, tiltPivot);
+    }
+  }
+  function startDrag(e) { drag = { id: e.pointerId, x: e.clientX, y: e.clientY }; anim = null; canvas.setPointerCapture(e.pointerId); }
+  canvas.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'touch') { touchIds.add(e.pointerId); if (touchIds.size > 1) { drag = null; return; } }
+    else if (e.button !== 0) return;
+    startDrag(e);
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY;
+    turnBy(2 * Math.PI * dx / (canvas.clientHeight || 1));
+    verticalStep(dy);
+  });
+  const endDrag = e => {
+    touchIds.delete(e.pointerId);
+    if (drag && e.pointerId === drag.id) { drag = null; try { canvas.releasePointerCapture(e.pointerId); } catch (_) {} }
+  };
+  canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel', endDrag);
+  window.addEventListener('keydown', e => {
+    if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    const k = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] }[e.key];
+    if (!k) return;
+    e.preventDefault(); anim = null;
+    if (k[0]) turnBy(k[0] * 0.08); else verticalStep(k[1] * 30);
+  });
+
+  scene.add(new THREE.HemisphereLight(0xdfe8ff, 0x1a2030, 0.9));
+  const key = new THREE.DirectionalLight(0xffffff, 0.7); key.position.set(1.5, 2.5, 2.5); scene.add(key);
+  const rim = new THREE.DirectionalLight(0x88aaff, 0.35); rim.position.set(-2, 1.5, -2); scene.add(rim);
+
+  // Coordinate frame: metres, Y up from the soles, +Z = front of the body, +X = the figure's left.
+  const anatomyGroup = new THREE.Group(); scene.add(anatomyGroup);
+  const chakraGroup = new THREE.Group(); scene.add(chakraGroup);
+  const layerGroups = {};
+  // Chakras (version 2 of the table)
+  const S = { w: 'w', b: 'b', p: 'p', y: 'y' };
+  const chakras = [
+    { id: 'muladhara', name: '1 · Muladhara', church: 'Church of Ephesus', petals: 4,
+      normal: [0, -1, 0.35],
+      status: { H: S.b, FB: S.w, LR: S.w },
+      text: { H: 'Two fingers above the anus, two below the genitals; four fingers wide.', FB: 'Root at S4, the fourth sacral vertebra (Leadbeater, and El Matrimonio Perfecto, ch. 19); the stem runs down through the coccygeal ganglion on the front of the coccyx and opens at the perineum, midway between the anus and the root of the genitals, facing down.', LR: 'Centre.' } },
+    { id: 'svadhisthana', name: '2 · Svadhisthana', church: 'Church of Smyrna', petals: 6,
+      normal: [0, 0, 1],
+      status: { H: S.b, FB: S.w, LR: S.w },
+      text: { H: 'A few centimetres above the pubic bone, in front of the prostate (drawn 1.5 cm above the root of the penis); in women, at the height of the uterus.', FB: 'Root in the spine at the height of the prostate, which here is the tip of the coccyx (no source gives this chakra a vertebra); the stem runs through the prostate and opens on the front of the body.', LR: 'Centre.' } },
+    { id: 'manipura', name: '3 · Manipura', church: 'Church of Pergamum', petals: 10,
+      normal: [0, 0, 1],
+      status: { H: S.w, FB: S.w, LR: S.w },
+      text: { H: 'A little above the navel (drawn 2 cm above it).', FB: 'Root at T8 (Leadbeater, ch. 19); the stem passes through the solar (coeliac) plexus at T12–L1, then descends and opens on the front of the body a little above the navel.', LR: 'Centre.' } },
+    { id: 'anahata', name: '4 · Anahata', church: 'Church of Thyatira', petals: 12,
+      normal: [0, 0, 1],
+      status: { H: S.w, FB: S.w, LR: S.w },
+      text: { H: 'At the heart.', FB: 'Root at the junction of C7 and T1, his «octava cervical» (ch. 19); the stem curves down through the heart and opens on the chest in front of it.', LR: 'Root on the midline; opening in front of the heart, left of the midline.' } },
+    { id: 'vishuddha', name: '5 · Vishuddha', church: 'Church of Sardis', petals: 16,
+      normal: [0, 0, 1],
+      status: { H: S.w, FB: S.w, LR: S.w },
+      text: { H: 'At the larynx and thyroid gland.', FB: 'Root at C3 (ch. 19); the stem curves down through the thyroid and opens on the front of the throat.', LR: 'Centre.' } },
+    { id: 'ajna', name: '6 · Ajna', church: 'Church of Philadelphia', petals: 96,
+      normal: [0, 0, 1],
+      status: { H: S.w, FB: S.w, LR: S.w },
+      text: { H: 'Between the eyebrows.', FB: 'Root at C1 (ch. 19); the stem rises through the pituitary gland, where he says this lotus has its root, and opens on the brow, between the eyebrows.', LR: 'Centre.' } },
+    { id: 'sahasrara', name: '7 · Sahasrara', church: 'Church of Laodicea', petals: 972,
+      normal: [0, 1, 0],
+      status: { H: S.b, FB: S.b, LR: S.w },
+      text: { H: 'The top of the head.', FB: 'Deep inside the head at the pineal gland; the axis rises from the pineal to the flower on the top of the head.', LR: 'Centre.' } },
+    // Hans 6 Oct 2026: the two pulmonary chakras, one in each lung (only Samael Aun Weor has them). One list entry below the
+    // seven; the left lung's flower is its twin, drawn and selected with it. No petal count or colour is given anywhere.
+    { id: 'pulmonary', extra: true, scale: 0.7, name: '8 · Pulmonary chakras', names: {"en": "8 · Pulmonary chakras", "vi": "8 · Luân xa phổi", "es": "8 · Chakras pulmonares"}, church: 'Not one of the seven; one in each lung', churches: {"en": "Not one of the seven; one in each lung", "vi": "Không nằm trong số bảy; mỗi lá phổi một luân xa", "es": "No es uno de los siete; uno en cada pulmón"}, normal: [0, 0, 1] },
+    { id: 'pulmonary_l', twinOf: 'pulmonary', extra: true, scale: 0.7, name: '8 · Pulmonary chakras', names: {"en": "8 · Pulmonary chakras", "vi": "8 · Luân xa phổi", "es": "8 · Chakras pulmonares"}, church: 'Not one of the seven; one in each lung', churches: {"en": "Not one of the seven; one in each lung", "vi": "Không nằm trong số bảy; mỗi lá phổi một luân xa", "es": "No es uno de los siete; uno en cada pulmón"}, normal: [0, 0, 1] },
+  ];
+
+  // ---- language: Vietnamese by default, English on request; Sanskrit names stay Sanskrit ----
+  const I18N = {"en": {"title": "Chakra roots and flowers", "intro": "Drag sideways to turn the figure, and up or down to move along it; at the top or bottom the view tilts. Scroll or pinch to zoom. Pick a chakra on the right to zoom in; click it again to zoom back out.", "front": "Front", "side": "Left side", "back": "Back", "top": "Top", "lblChakra": "Chakra labels", "lblOrgan": "Organ labels", "arm": "Hide nearer arm", "same": "Same-height roots", "loading": "Loading anatomy…", "loadfail": "The anatomy model could not be loaded. Reload the page to try again.", "hint": "Drag sideways to turn · up or down to move along the body · scroll or pinch to zoom · arrow keys work too", "seven": "The chakras", "lg1": "Samael Aun Weor", "lg2": "≥ 2/3 of others", "lg3": "he contradicts himself, unsettled", "chips": "Chips: <b>H</b> height · <b>F-B</b> front-to-back · <b>L-R</b> left-to-right", "layers": "Anatomy layers", "H": "H", "FB": "F-B", "LR": "L-R", "dH": "Height", "dFB": "Front-to-back", "dLR": "Left-to-right", "dRoot": "Root", "noRoot": "none; the axis rises from the pineal gland", "root": "root", "samePrefix": "same height: ", "panel": "Show panel", "male": "Male", "female": "Female", "about": "The positions of the chakras and their stems in this graphic were determined by synthesizing descriptions from the books and lectures of Samael Aun Weor, along with the sources that he cited as references. In some cases, the precise locations were not completely clear. We have written a document explaining how we determined the locations in those difficult cases and citing all of our references. Please read the complete document <a href=\"index.html\" target=\"_blank\" rel=\"noopener\">here</a>.", "lic": "License info", "licM": "<b>Male body.</b> BodyParts3D, © The Database Center for Life Science, licensed under <a href=\"https://creativecommons.org/licenses/by-sa/2.1/jp/deed.en\" target=\"_blank\" rel=\"noopener\">CC Attribution-Share Alike 2.1 Japan</a>. Mitsuhashi N, Fujieda K, Tamura T, Kawamoto S, Takagi T, Okubo K. BodyParts3D: 3D structure database for anatomical concepts. <i>Nucleic Acids Res.</i> 2009;37:D782–5, <a href=\"https://doi.org/10.1093/nar/gkn613\" target=\"_blank\" rel=\"noopener\">doi:10.1093/nar/gkn613</a>. Data archive: <a href=\"https://doi.org/10.18908/lsdba.nbdc00837-000\" target=\"_blank\" rel=\"noopener\">doi:10.18908/lsdba.nbdc00837-000</a>. Meshes from Kevin M. Moerman's <a href=\"https://github.com/Kevin-Mattheus-Moerman/BodyParts3D\" target=\"_blank\" rel=\"noopener\">BodyParts3D repository</a>, simplified for this page; the simplified meshes are under the same licence. The two pulmonary chakras were placed by measuring the lungs of BodyParts3D 4.0 (the DBCLS archive), which are not drawn.", "licF": "<b>Female body.</b> Kristen Browne and Heidi Schlehlein, 3D Reference Organ Set for United, Female, v1.10, Human Reference Atlas (HuBMAP), <a href=\"https://doi.org/10.48539/HBM637.DWBM.744\" target=\"_blank\" rel=\"noopener\">doi:10.48539/HBM637.DWBM.744</a>, licensed under <a href=\"https://creativecommons.org/licenses/by/4.0/\" target=\"_blank\" rel=\"noopener\">CC BY 4.0</a>; meshes simplified and combined with other models for this page, and the ends of the fallopian tubes moved a few millimetres to rest on the ovaries. Visible Human data courtesy of the U.S. National Library of Medicine. The two pulmonary chakras were placed by measuring this set's lungs, which are not drawn.", "col_flower": "Flower", "col_organ": "Organ", "col_spine": "Root", "col_focus": "Focus", "panelHide": "Hide panel", "col_petals": "Petals", "col_powers": "Powers", "col_mantras": "Mantras"}, "vi": {"title": "Rễ và hoa của các luân xa", "intro": "Kéo sang ngang để xoay hình, kéo lên hoặc xuống để di chuyển dọc theo cơ thể; khi đến đỉnh đầu hoặc phía dưới cùng, góc nhìn sẽ nghiêng. Cuộn hoặc chụm hai ngón để phóng to. Chọn một luân xa ở bên phải để phóng to; bấm lần nữa để thu nhỏ lại.", "front": "Phía trước", "side": "Bên trái", "back": "Phía sau", "top": "Từ trên", "lblChakra": "Nhãn luân xa", "lblOrgan": "Nhãn cơ quan", "arm": "Ẩn cánh tay gần", "same": "Rễ ngang tầm", "loading": "Đang tải mô hình giải phẫu…", "loadfail": "Không tải được mô hình giải phẫu. Hãy tải lại trang để thử lại.", "hint": "Kéo ngang để xoay · kéo lên hoặc xuống để di chuyển dọc cơ thể · cuộn hoặc chụm để phóng to · cũng có thể dùng phím mũi tên", "seven": "Các luân xa", "lg1": "Samael Aun Weor", "lg2": "≥ 2/3 các tác giả khác", "lg3": "ông tự mâu thuẫn, chưa giải quyết", "chips": "Ô: <b>Cao</b> chiều cao · <b>T–S</b> trước–sau · <b>T–P</b> trái–phải", "layers": "Các lớp giải phẫu", "H": "Cao", "FB": "T–S", "LR": "T–P", "dH": "Chiều cao", "dFB": "Trước–sau", "dLR": "Trái–phải", "dRoot": "Rễ", "noRoot": "không có; trục đi lên từ tuyến tùng", "root": "rễ", "samePrefix": "ngang tầm: ", "panel": "Hiện bảng", "male": "Nam", "female": "Nữ", "about": "Vị trí của các luân xa và cuống hoa của chúng trong hình này được xác định bằng cách tổng hợp các mô tả trong các sách và bài giảng của Samael Aun Weor, cùng với các nguồn mà thầy trích dẫn làm tài liệu tham khảo. Trong một số trường hợp, vị trí chính xác không hoàn toàn rõ ràng. Chúng tôi đã viết một tài liệu giải thích cách chúng tôi xác định vị trí trong những trường hợp khó đó, có trích dẫn tất cả các nguồn tham khảo. Mời đọc toàn bộ tài liệu <a href=\"vi.html\" target=\"_blank\" rel=\"noopener\">tại đây</a>.", "lic": "Thông tin giấy phép", "licM": "<b>Cơ thể nam.</b> BodyParts3D, © The Database Center for Life Science, cấp phép theo <a href=\"https://creativecommons.org/licenses/by-sa/2.1/jp/deed.en\" target=\"_blank\" rel=\"noopener\">CC Attribution-Share Alike 2.1 Japan</a>. Mitsuhashi N, Fujieda K, Tamura T, Kawamoto S, Takagi T, Okubo K. BodyParts3D: 3D structure database for anatomical concepts. <i>Nucleic Acids Res.</i> 2009;37:D782–5, <a href=\"https://doi.org/10.1093/nar/gkn613\" target=\"_blank\" rel=\"noopener\">doi:10.1093/nar/gkn613</a>. Kho lưu trữ dữ liệu: <a href=\"https://doi.org/10.18908/lsdba.nbdc00837-000\" target=\"_blank\" rel=\"noopener\">doi:10.18908/lsdba.nbdc00837-000</a>. Lưới lấy từ <a href=\"https://github.com/Kevin-Mattheus-Moerman/BodyParts3D\" target=\"_blank\" rel=\"noopener\">kho BodyParts3D của Kevin M. Moerman</a>; các lưới đã được giản lược cho trang này và vẫn theo cùng giấy phép. Hai luân xa phổi được đặt bằng cách đo phổi của BodyParts3D 4.0 (kho lưu trữ của DBCLS); phổi không được vẽ ra.", "licF": "<b>Cơ thể nữ.</b> Kristen Browne và Heidi Schlehlein, 3D Reference Organ Set for United, Female, v1.10, Human Reference Atlas (HuBMAP), <a href=\"https://doi.org/10.48539/HBM637.DWBM.744\" target=\"_blank\" rel=\"noopener\">doi:10.48539/HBM637.DWBM.744</a>, cấp phép theo <a href=\"https://creativecommons.org/licenses/by/4.0/\" target=\"_blank\" rel=\"noopener\">CC BY 4.0</a>; các lưới đã được giản lược và kết hợp với các mô hình khác cho trang này, và đầu các vòi tử cung được dời đi vài milimet để nằm trên buồng trứng. Dữ liệu Visible Human: Courtesy of the U.S. National Library of Medicine. Hai luân xa phổi được đặt bằng cách đo phổi trong bộ dữ liệu này; phổi không được vẽ ra.", "col_flower": "Hoa", "col_organ": "Cơ quan", "col_spine": "Rễ", "col_focus": "Điểm tập trung", "panelHide": "Ẩn bảng", "col_petals": "Số cánh hoa", "col_powers": "Quyền năng", "col_mantras": "Thần chú"}, "es": {"title": "Raíces y flores de los chakras", "intro": "Arrastre hacia los lados para girar la figura, y hacia arriba o hacia abajo para recorrerla; en la parte superior o inferior la vista se inclina. Use la rueda o pellizque para acercar. Elija un chakra a la derecha para acercarse; haga clic de nuevo para alejarse.", "front": "Frente", "side": "Lado izquierdo", "back": "Atrás", "top": "Arriba", "lblChakra": "Nombres de los chakras", "lblOrgan": "Nombres de los órganos", "arm": "Ocultar el brazo más cercano", "same": "Raíces a la misma altura", "loading": "Cargando la anatomía…", "loadfail": "No se pudo cargar el modelo anatómico. Vuelva a cargar la página para intentarlo de nuevo.", "hint": "Arrastre a los lados para girar · arriba o abajo para recorrer el cuerpo · rueda o pellizco para acercar · también con las flechas", "seven": "Los chakras", "lg1": "Samael Aun Weor", "lg2": "≥ 2/3 de los demás", "lg3": "se contradice, sin resolver", "chips": "Fichas: <b>Al</b> altura · <b>F-A</b> frente-atrás · <b>I-D</b> izquierda-derecha", "layers": "Capas anatómicas", "H": "Al", "FB": "F-A", "LR": "I-D", "dH": "Altura", "dFB": "Frente-atrás", "dLR": "Izquierda-derecha", "dRoot": "Raíz", "noRoot": "ninguna; el eje sube desde la glándula pineal", "root": "raíz", "samePrefix": "misma altura: ", "panel": "Mostrar panel", "male": "Hombre", "female": "Mujer", "about": "Las posiciones de los chakras y de sus tallos en este gráfico se determinaron reuniendo las descripciones de los libros y conferencias de Samael Aun Weor, junto con las fuentes que él citó como referencia. En algunos casos, la ubicación precisa no estaba del todo clara. Hemos escrito un documento que explica cómo determinamos las ubicaciones en esos casos difíciles y que cita todas nuestras referencias. Lea el documento completo <a href=\"es.html\" target=\"_blank\" rel=\"noopener\">aquí</a>.", "lic": "Información de licencias", "licM": "<b>Cuerpo masculino.</b> BodyParts3D, © The Database Center for Life Science, con licencia <a href=\"https://creativecommons.org/licenses/by-sa/2.1/jp/deed.en\" target=\"_blank\" rel=\"noopener\">CC Attribution-Share Alike 2.1 Japan</a>. Mitsuhashi N, Fujieda K, Tamura T, Kawamoto S, Takagi T, Okubo K. BodyParts3D: 3D structure database for anatomical concepts. <i>Nucleic Acids Res.</i> 2009;37:D782–5, <a href=\"https://doi.org/10.1093/nar/gkn613\" target=\"_blank\" rel=\"noopener\">doi:10.1093/nar/gkn613</a>. Archivo de datos: <a href=\"https://doi.org/10.18908/lsdba.nbdc00837-000\" target=\"_blank\" rel=\"noopener\">doi:10.18908/lsdba.nbdc00837-000</a>. Mallas tomadas del <a href=\"https://github.com/Kevin-Mattheus-Moerman/BodyParts3D\" target=\"_blank\" rel=\"noopener\">repositorio BodyParts3D</a> de Kevin M. Moerman, simplificadas para esta página; las mallas simplificadas tienen la misma licencia. Los dos chakras pulmonares se situaron midiendo los pulmones de BodyParts3D 4.0 (archivo de DBCLS), que no se dibujan.", "licF": "<b>Cuerpo femenino.</b> Kristen Browne y Heidi Schlehlein, 3D Reference Organ Set for United, Female, v1.10, Human Reference Atlas (HuBMAP), <a href=\"https://doi.org/10.48539/HBM637.DWBM.744\" target=\"_blank\" rel=\"noopener\">doi:10.48539/HBM637.DWBM.744</a>, con licencia <a href=\"https://creativecommons.org/licenses/by/4.0/\" target=\"_blank\" rel=\"noopener\">CC BY 4.0</a>; mallas simplificadas y combinadas con otros modelos para esta página, y los extremos de las trompas de Falopio desplazados unos milímetros para que descansen sobre los ovarios. Datos del Visible Human: Courtesy of the U.S. National Library of Medicine. Los dos chakras pulmonares se situaron midiendo los pulmones de este conjunto, que no se dibujan.", "col_flower": "Flor", "col_organ": "Órgano", "col_spine": "Raíz", "col_focus": "Foco", "panelHide": "Ocultar panel", "col_petals": "Pétalos", "col_powers": "Poderes", "col_mantras": "Mantras"}};
+  // Card details: the four columns of the "Where are the Chakras?" table (Hans 1 Oct 2026)
+  const COLS = ['flower', 'petals', 'organ', 'spine', 'focus', 'mantras', 'powers'];   // Hans 6 Oct 2026: powers, as in the report's table
+  const TABLE = {"en": {"muladhara": {"flower": "Perineum: between the anus and the genitals in men; just behind the vaginal opening in women", "petals": "4", "organ": "Coccygeal ganglion (ganglion impar), on the front of the coccyx", "spine": "S4, the fourth sacral vertebra", "focus": "Coccygeal ganglion", "powers": "power over the earth element, seat of the Kundalini, elixir of long life, entry into the underground regions, transmutation into Ojas", "mantras": "BHUR; note DO"}, "svadhisthana": {"flower": "Front of the body, a few cm above the pubic bone (at the height of the uterus in women)", "petals": "6", "organ": "Prostate (uterus in women)", "spine": "At the height of the prostate or uterus; no vertebra given", "focus": "Prostate (uterus in women)", "powers": "power over water, power to create, conscious astral projection, knowledge of the inner worlds, control of the sexual act, conquest of death, governs the kidneys and the lower abdomen", "mantras": "M, BHUVAR; note RE"}, "manipura": {"flower": "Front of the body, a little above the navel", "petals": "10", "organ": "Solar (coeliac) plexus, in the epigastrium", "spine": "T8, the eighth thoracic vertebra", "focus": "Solar plexus, the navel region", "powers": "power over fire, telepathy, immunity to fire, collects solar energy for the other chakras, centre of the emotions, governs the liver, spleen, stomach and pancreas, Patala Siddhi, Jinas states", "mantras": "U, UN, CHUS, UNRU, SUURA, AUM, RAM, SWA; note MI"}, "anahata": {"flower": "Over the heart", "petals": "12", "organ": "Heart (with the cardiac plexus)", "spine": "C8: between the seventh cervical and first thoracic vertebrae", "focus": "Heart", "powers": "power over the air element, conscious astral projection, Jinas states, intuition, inspiration, controls the rise of the Kundalini, hearing the mystic sounds, wisdom, igneous wings, clairvoyance and clairaudience, telepathy, memory of past lives", "mantras": "O, ON, CHOS, ONRO, SUORA, AUOM, S; note FA"}, "vishuddha": {"flower": "Front of the throat, at the thyroid", "petals": "16", "organ": "Thyroid gland, in the larynx", "spine": "C3, the third cervical vertebra", "focus": "Throat: thyroid and larynx", "powers": "clairaudience, the creative Word, keeping the body through the cosmic night, conceptual synthesis, power over the ether, knowledge of past, present and future, understanding of the sacred books, speaking the divine language, clairvoyance of the mental body", "mantras": "E, EN, CHES, ENRE, SUERA, AUEM, HAN; note SOL"}, "ajna": {"flower": "Between the eyebrows", "petals": "96, in two colours: rose with yellow on the person's left half, purplish blue on the right (Leadbeater). That is why some books say it has only two petals; Samael Aun Weor gives both: “two petals and ninety-six radiations”.", "organ": "Pituitary gland, with the cavernous plexus beside it", "spine": "C1, the first cervical vertebra (atlas)", "focus": "Pituitary gland", "powers": "clairvoyance, reading the thoughts of others, seeing the aura, seat of the mind, imagination, the eight major and the minor siddhis, supreme beatitude and absolute liberation, power over light", "mantras": "I, IN, CHIS, INRI, SUIRA, AUIM, OM; note LA"}, "sahasrara": {"flower": "Top of the head (the crown)", "petals": "960, with a smaller whirl of its own at the centre: 12 more, white with a golden core (Leadbeater). The books, Samael Aun Weor among them, call it the thousand-petalled lotus.", "organ": "Pineal gland", "spine": "Above the spine, at the height of the pineal gland", "focus": "Pineal gland", "powers": "polyvidence, intuition, ecstasy, leaving the body in the Spirit, omniscience, illumination and wisdom, reading the Akashic records, union with the Intimate, transmitting centre of telepathy, clairvoyance, power over subtle forces of nature, the twelve faculties", "mantras": "I (for the pineal gland); note SI"}, "pulmonary": {"flower": "On the front of the chest, to the right and left of the heart, at the height of the Anahata: one chakra for each lung", "petals": "Unknown: no source gives a petal count, so each flower is drawn round. Its colour is also unknown; it is drawn cream.", "organ": "The lungs (the pulmonary plexus, at the root of each lung)", "spine": "None on the spine: each stem's root is in its own lung, where the main bronchus enters", "focus": "The lungs, sounded with the vowel A", "powers": "memory of past lives", "mantras": "A, AN, CHAS, ANRA, SUARA, AUAM"}}, "vi": {"muladhara": {"flower": "Đáy chậu: ở nam giới, giữa hậu môn và bộ phận sinh dục; ở phụ nữ, ngay phía sau cửa âm đạo", "petals": "4", "organ": "Hạch cụt (hạch impar), ở mặt trước xương cụt", "spine": "S4, đốt sống cùng thứ tư", "focus": "Hạch cụt", "powers": "quyền năng đối với nguyên tố đất, nơi ngự của Kundalini, thuốc trường sinh, đi vào các vùng dưới lòng đất, chuyển hóa thành Ojas", "mantras": "BUR; nốt Đô"}, "svadhisthana": {"flower": "Mặt trước cơ thể, cao hơn xương mu vài centimet (ở phụ nữ, ngang tầm tử cung)", "petals": "6", "organ": "Tuyến tiền liệt (ở phụ nữ là tử cung)", "spine": "Ngang tầm tuyến tiền liệt hoặc tử cung; không nguồn nào nêu số đốt sống", "focus": "Tuyến tiền liệt (ở phụ nữ là tử cung)", "powers": "quyền năng đối với nước, quyền năng sáng tạo, xuất hồn có ý thức, hiểu biết về các thế giới nội tại, kiểm soát quan hệ tình dục, chiến thắng cái chết, điều khiển thận và bụng dưới", "mantras": "M, BU-VAR; nốt Rê"}, "manipura": {"flower": "Mặt trước cơ thể, cao hơn rốn một chút", "petals": "10", "organ": "Đám rối dương (đám rối tạng), ở vùng thượng vị", "spine": "T8, đốt sống ngực thứ tám", "focus": "Đám rối dương, vùng rốn", "powers": "quyền năng đối với lửa, thần giao cách cảm, miễn nhiễm với lửa, thu nhận năng lượng Mặt trời cho các luân xa khác, trung tâm của cảm xúc, điều khiển gan, lá lách, dạ dày và tuyến tụy, Patala Siddhi, trạng thái jinn", "mantras": "U, UN, CHUS, UN-RU, SUU-RA, AUM, RAM, SOA; nốt Mi"}, "anahata": {"flower": "Trên ngực, phía trước tim", "petals": "12", "organ": "Tim (cùng với đám rối tim)", "spine": "C8: giữa đốt sống cổ thứ bảy và đốt sống ngực thứ nhất", "focus": "Tim", "powers": "quyền năng đối với nguyên tố khí, xuất hồn có ý thức, trạng thái jinn, trực giác, cảm hứng, điều khiển sự đi lên của Kundalini, nghe các âm thanh huyền nhiệm, trí tuệ, đôi cánh rực lửa, nhãn thông và thiên nhĩ thông, thần giao cách cảm, nhớ lại các kiếp trước", "mantras": "Ô, ÔN, CHÔS, ÔN-RÔ, SUÔ-RA, AU-ÔM, S; nốt Pha"}, "vishuddha": {"flower": "Mặt trước cổ họng, ngang tuyến giáp", "petals": "16", "organ": "Tuyến giáp, ở thanh quản", "spine": "C3, đốt sống cổ thứ ba", "focus": "Cổ họng: tuyến giáp và thanh quản", "powers": "thiên nhĩ thông, Ngôi lời sáng tạo, giữ cơ thể qua đêm vũ trụ, năng lực tổng hợp khái niệm, quyền năng đối với ê-te, hiểu biết về quá khứ, hiện tại và tương lai, thấu hiểu các kinh sách thiêng liêng, nói ngôn ngữ thiêng liêng, nhãn thông của cơ thể lý trí", "mantras": "Ê, ÊN, CHÊS, ÊN-RÊ, SUÊ-RA, AU-ÊM, AN; nốt Son"}, "ajna": {"flower": "Giữa hai chân mày", "petals": "96, chia làm hai màu: nửa bên trái của người ấy hồng pha vàng, nửa bên phải xanh tím (Leadbeater). Vì thế một số sách nói luân xa này chỉ có hai cánh hoa; Samael Aun Weor nêu cả hai: “hai cánh hoa và chín mươi sáu tia sáng”.", "organ": "Tuyến yên, với đám rối xoang hang bên cạnh", "spine": "C1, đốt sống cổ thứ nhất (đốt đội)", "focus": "Tuyến yên", "powers": "nhãn thông, đọc ý nghĩ của người khác, nhìn thấy hào quang, nơi ngự của tâm trí, trí tưởng tượng, tám siddhi lớn và các siddhi nhỏ, phúc lạc tối thượng và giải thoát tuyệt đối, quyền năng đối với ánh sáng", "mantras": "I, IN, CHIS, IN-RI, SUY-RA, AU-IM, ÔM; nốt La"}, "sahasrara": {"flower": "Đỉnh đầu", "petals": "960, ở giữa còn có một xoáy nhỏ riêng: thêm 12 cánh, màu trắng, lõi vàng (Leadbeater). Các sách, trong đó có Samael Aun Weor, gọi nó là hoa sen nghìn cánh.", "organ": "Tuyến tùng", "spine": "Phía trên cột sống, ngang tầm tuyến tùng", "focus": "Tuyến tùng", "powers": "Đa Nhãn thông, trực giác, trạng thái định, rời khỏi cơ thể trong Tâm linh, toàn giác, khai sáng và trí tuệ, đọc hồ sơ Akasha, hợp nhất với Đấng Nội tại, trung tâm phát thần giao cách cảm, nhãn thông, quyền năng đối với các lực vi tế của tự nhiên, mười hai năng lực", "mantras": "I (cho tuyến tùng); nốt Si"}, "pulmonary": {"flower": "Ở mặt trước ngực, bên phải và bên trái tim, ngang tầm Anahata: mỗi lá phổi một luân xa", "petals": "Không rõ: không nguồn nào nêu số cánh hoa, nên mỗi hoa được vẽ tròn. Màu sắc cũng không rõ; hoa được vẽ màu kem.", "organ": "Phổi (đám rối phổi, ở rốn phổi của mỗi lá phổi)", "spine": "Không ở cột sống: rễ của mỗi cuống nằm trong lá phổi của nó, nơi phế quản chính đi vào", "focus": "Phổi, được làm rung động bằng nguyên âm A", "powers": "nhớ lại các kiếp trước", "mantras": "A, AN, CHAS, AN-RA, SOA-RA, AU-AM"}}, "es": {"muladhara": {"flower": "Perineo: entre el ano y los genitales en el hombre; justo detrás de la abertura vaginal en la mujer", "petals": "4", "organ": "Ganglio coccígeo (ganglio impar), en la cara anterior del cóccix", "spine": "S4, la cuarta vértebra sacra", "focus": "Ganglio coccígeo", "powers": "poder sobre el elemento tierra, sede del Kundalini, elixir de larga vida, entrada en las regiones subterráneas, transmutación en Ojas", "mantras": "BHUR; nota DO"}, "svadhisthana": {"flower": "Parte delantera del cuerpo, unos cm por encima del pubis (a la altura del útero en la mujer)", "petals": "6", "organ": "Próstata (útero en la mujer)", "spine": "A la altura de la próstata o del útero; no se indica vértebra", "focus": "Próstata (útero en la mujer)", "powers": "poder sobre las aguas, poder de crear, desdoblamiento astral consciente, conocimiento de los mundos internos, control del acto sexual, conquista de la muerte, controla los riñones y la parte inferior del abdomen", "mantras": "M, BHUVAR; nota RE"}, "manipura": {"flower": "Parte delantera del cuerpo, un poco por encima del ombligo", "petals": "10", "organ": "Plexo solar (celíaco), en el epigastrio", "spine": "T8, la octava vértebra dorsal", "focus": "Plexo solar, la región del ombligo", "powers": "poder sobre el fuego, telepatía, inmunidad al fuego, recoge la energía solar para los demás chakras, centro de las emociones, controla el hígado, el bazo, el estómago y el páncreas, Patala Siddhi, estados de Jinas", "mantras": "U, UN, CHUS, UNRU, SUURA, AUM, RAM, SWA; nota MI"}, "anahata": {"flower": "Sobre el corazón", "petals": "12", "organ": "Corazón (con el plexo cardíaco)", "spine": "C8: entre la séptima vértebra cervical y la primera dorsal", "focus": "Corazón", "powers": "poder sobre el elemento aire, desdoblamiento astral consciente, estados de Jinas, intuición, inspiración, controla el ascenso del Kundalini, escuchar los sonidos místicos, sabiduría, alas ígneas, clarividencia y clariaudiencia, telepatía, recuerdo de las vidas pasadas", "mantras": "O, ON, CHOS, ONRO, SUORA, AUOM, S; nota FA"}, "vishuddha": {"flower": "Parte delantera de la garganta, a la altura de la tiroides", "petals": "16", "organ": "Glándula tiroides, en la laringe", "spine": "C3, la tercera vértebra cervical", "focus": "Garganta: tiroides y laringe", "powers": "clariaudiencia, el Verbo creador, conservar el cuerpo durante la noche cósmica, sintetismo conceptual, poder sobre el éter, conocimiento de lo pasado, lo presente y lo futuro, comprensión de los libros sagrados, hablar la divina lengua, clarividencia del cuerpo mental", "mantras": "E, EN, CHES, ENRE, SUERA, AUEM, HAN; nota SOL"}, "ajna": {"flower": "Entrecejo", "petals": "96, en dos colores: rosada con amarillo en la mitad izquierda de la persona, azul purpúreo en la derecha (Leadbeater). Por eso algunos libros dicen que tiene solo dos pétalos; Samael Aun Weor da ambas cifras: “dos pétalos y noventa y seis radiaciones”.", "organ": "Glándula pituitaria, con el plexo cavernoso a su lado", "spine": "C1, la primera vértebra cervical (atlas)", "focus": "Glándula pituitaria", "powers": "clarividencia, leer los pensamientos ajenos, ver el aura, sede de la mente, imaginación, los ocho siddhis mayores y los menores, suprema beatitud y liberación absoluta, poder sobre la luz", "mantras": "I, IN, CHIS, INRI, SUIRA, AUIM, OM; nota LA"}, "sahasrara": {"flower": "Parte superior de la cabeza (la coronilla)", "petals": "960, con un torbellino menor propio en el centro: 12 más, blanco con el núcleo dorado (Leadbeater). Los libros, entre ellos los de Samael Aun Weor, lo llaman el loto de mil pétalos.", "organ": "Glándula pineal", "spine": "Por encima de la columna vertebral, a la altura de la glándula pineal", "focus": "Glándula pineal", "powers": "polividencia, intuición, éxtasis, salir del cuerpo en el Espíritu, omnisciencia, iluminación y sabiduría, leer los registros akáshicos, unión con el Íntimo, centro emisor de la telepatía, clarividencia, poder sobre las fuerzas sutiles de la naturaleza, las doce facultades", "mantras": "I (por la glándula pineal); nota SI"}, "pulmonary": {"flower": "En la parte delantera del pecho, a la derecha y a la izquierda del corazón, a la altura del Anahata: un chakra por cada pulmón", "petals": "Desconocido: ninguna fuente da el número de pétalos, por lo que cada flor se dibuja redonda. Su color también es desconocido; se dibuja de color crema.", "organ": "Los pulmones (el plexo pulmonar, en la raíz de cada pulmón)", "spine": "Ninguna en la columna: la raíz de cada tallo está en su propio pulmón, donde entra el bronquio principal", "focus": "Los pulmones, haciendo resonar la vocal A", "powers": "recuerdo de las vidas pasadas", "mantras": "A, AN, CHAS, ANRA, SUARA, AUAM"}}};
+  const LAYERS_VI = {"skin": "Da", "spine": "Cột sống", "discs": "Đĩa đệm", "neuro": "Tủy sống", "glands": "Tuyến yên, tuyến tùng, tuyến giáp", "heart": "Tim", "pelvic": "Tuyến tiền liệt", "carotid": "Động mạch cảnh trong (đám rối xoang hang)"};
+  const LAYERS_VI_F = {"glands": "Tuyến tùng, tuyến yên, thanh quản", "pelvic": "Tử cung, vòi trứng và buồng trứng"};
+  const LAND_VI = {"anus": "hậu môn", "root of the genitals": "gốc bộ phận sinh dục", "navel": "rốn", "celiac plexus (solar plexus)": "đám rối tạng (đám rối dương)", "prostate": "tuyến tiền liệt", "thyroid": "tuyến giáp", "pituitary": "tuyến yên", "pineal": "tuyến tùng", "vaginal opening": "cửa âm đạo", "uterus": "tử cung", "larynx": "thanh quản", "coccygeal ganglion": "hạch cụt", "carotid plexus": "đám rối động mạch cảnh", "cavernous plexus": "đám rối xoang hang"};
+  const CHAKRA_VI = {"muladhara": {"church": "Thánh đường Ê-phê-sô", "H": "Cách khoảng hai ngón tay ở phía trước hậu môn và hai ngón tay ở phía sau bộ phận sinh dục; rộng bốn ngón tay.", "FB": "Rễ ở S4, đốt sống cùng thứ tư (Leadbeater, và Hôn nhân hoàn hảo, chương 19); cuống hoa chạy xuống, đi qua hạch cụt ở mặt trước xương cụt, và mở ra ở đáy chậu, giữa hậu môn và gốc bộ phận sinh dục, hướng xuống dưới.", "LR": "Chính giữa."}, "svadhisthana": {"church": "Thánh đường Si-miệc-nơ", "H": "Cao hơn xương mu vài centimet, phía trước tuyến tiền liệt (vẽ cao hơn gốc dương vật 1,5 cm); ở phụ nữ, ngang tầm tử cung.", "FB": "Rễ trong cột sống ngang tầm tuyến tiền liệt, ở đây là chóp xương cụt (không nguồn nào cho luân xa này số đốt sống); cuống hoa đi qua tuyến tiền liệt và mở ra ở mặt trước cơ thể.", "LR": "Chính giữa."}, "manipura": {"church": "Thánh đường Pẹt-găm", "H": "Cao hơn rốn một chút (vẽ cao hơn rốn 2 cm).", "FB": "Rễ ở T8 (Leadbeater, chương 19); cuống hoa đi qua đám rối dương (đám rối tạng) ở ngang T12–L1, rồi đi xuống và mở ra ở mặt trước cơ thể, cao hơn rốn một chút.", "LR": "Chính giữa."}, "anahata": {"church": "Thánh đường Thi-a-ti-rơ", "H": "Ngang tầm tim.", "FB": "Rễ ở chỗ nối giữa C7 và T1, tức “octava cervical” của thầy (chương 19); cuống hoa cong xuống, đi qua tim và mở ra trên ngực, phía trước tim.", "LR": "Rễ ở đường giữa; hoa ở phía trước tim, lệch sang trái đường giữa."}, "vishuddha": {"church": "Thánh đường Sạt-đe", "H": "Ở thanh quản và tuyến giáp.", "FB": "Rễ ở C3 (chương 19); cuống hoa cong xuống, đi qua tuyến giáp và mở ra ở mặt trước cổ họng.", "LR": "Chính giữa."}, "ajna": {"church": "Thánh đường Phi-la-đen-phi-a", "H": "Giữa hai chân mày.", "FB": "Rễ ở C1 (chương 19); cuống hoa đi lên qua tuyến yên, nơi thầy nói hoa sen này có rễ, và mở ra ở trán, giữa hai chân mày.", "LR": "Chính giữa."}, "sahasrara": {"church": "Thánh đường Lao-đi-xê", "H": "Đỉnh đầu.", "FB": "Sâu bên trong đầu, ở tuyến tùng; trục đi lên từ tuyến tùng đến hoa trên đỉnh đầu.", "LR": "Chính giữa."}};
+  const LEVEL_VI = { 'coccyx': 'xương cụt' };
+  // Spanish (Hans 2 Oct 2026)
+  const LAND_ES = {"anus": "ano", "root of the genitals": "raíz de los genitales", "navel": "ombligo", "celiac plexus (solar plexus)": "plexo celíaco (plexo solar)", "prostate": "próstata", "thyroid": "tiroides", "pituitary": "pituitaria", "pineal": "pineal", "vaginal opening": "abertura vaginal", "uterus": "útero", "larynx": "laringe", "coccygeal ganglion": "ganglio coccígeo", "carotid plexus": "plexo carotídeo", "cavernous plexus": "plexo cavernoso"};
+  const LAYERS_ES = {"skin": "Piel", "spine": "Columna vertebral", "discs": "Discos", "neuro": "Médula espinal", "glands": "Pituitaria, pineal y tiroides", "heart": "Corazón", "pelvic": "Próstata"};
+  const LAYERS_ES_F = {"glands": "Pineal, pituitaria y laringe", "pelvic": "Útero, trompas de Falopio y ovarios"};
+  const CHURCH_ES = {"muladhara": "Iglesia de Éfeso", "svadhisthana": "Iglesia de Esmirna", "manipura": "Iglesia de Pérgamo", "anahata": "Iglesia de Tiatira", "vishuddha": "Iglesia de Sardis", "ajna": "Iglesia de Filadelfia", "sahasrara": "Iglesia de Laodicea"};
+  const LEVEL_ES = { 'coccyx': 'cóccix' };
+  let lang = 'vi';
+  try { const saved = localStorage.getItem('chakra3d-lang'); if (saved === 'en' || saved === 'vi' || saved === 'es') lang = saved; } catch (_) {}
+  // Hans 2 Oct 2026: a link can choose the language (?lang=en or #lang=vi), so each edition of the report opens the model in
+  // its own language. It applies to this visit only; the reader's own choice (the VI/EN buttons) is still remembered.
+  try {
+    const m = (location.search + '&' + location.hash + '&' + (document.referrer || '')).match(/[?&#]lang=(en|vi|es)\b/);
+    if (m) lang = m[1];
+  } catch (_) {}
+  const T = k => I18N[lang][k];
+  const lvl = x => lang === 'vi' ? (LEVEL_VI[x] || x) : lang === 'es' ? (LEVEL_ES[x] || x) : x;
+  const nameOf = c => (c.names && c.names[lang]) || c.name;
+  const churchOf = c => c.churches ? c.churches[lang] : lang === 'vi' ? CHAKRA_VI[c.id].church : lang === 'es' ? CHURCH_ES[c.id] : c.church;
+  let sex = 'm'; try { if (localStorage.getItem('chakra3d-sex') === 'f') sex = 'f'; } catch (_) {}
+  // Wording that changes with the female body (uterus, vaginal opening, larynx)
+  const TEXT_F = {"en": {"muladhara": {"H": "At the perineum, just behind the vaginal opening. (The texts' “two fingers above the anus, two below the genitals” describes the male body.)", "FB": "Root at S4, the fourth sacral vertebra (Leadbeater, and El Matrimonio Perfecto, ch. 19); the stem runs down through the coccygeal ganglion on the front of the coccyx and opens at the perineum just behind the vaginal opening, facing down. (“Midway between the anus and the genitals” is measured on the male body; in a woman the same place is just behind the vaginal opening.)"}, "svadhisthana": {"H": "At the height of the uterus, a few centimetres above the pubic bone (in men, drawn 1.5 cm above the root of the penis).", "FB": "Root in the spine at the height of the uterus, which here is the upper coccyx (no source gives this chakra a vertebra); the stem runs through the uterus and opens on the front of the body."}, "vishuddha": {"FB": "Root at C3 (ch. 19); the stem curves down through the larynx and opens on the front of the throat."}}, "vi": {"muladhara": {"H": "Ở đáy chậu, ngay phía sau cửa âm đạo. (Câu “cách hậu môn hai ngón tay, cách bộ phận sinh dục hai ngón tay” trong các sách mô tả cơ thể nam.)", "FB": "Rễ ở S4, đốt sống cùng thứ tư (Leadbeater, và Hôn nhân hoàn hảo, chương 19); cuống hoa chạy xuống, đi qua hạch cụt ở mặt trước xương cụt, và mở ra ở đáy chậu, ngay phía sau cửa âm đạo, hướng xuống dưới. (“Giữa hậu môn và bộ phận sinh dục” là cách đo trên cơ thể nam; ở phụ nữ, chỗ đó nằm ngay phía sau cửa âm đạo.)"}, "svadhisthana": {"H": "Ngang tầm tử cung, cao hơn xương mu vài centimet (ở nam giới, vẽ cao hơn gốc dương vật 1,5 cm).", "FB": "Rễ trong cột sống ngang tầm tử cung, ở đây là phần trên xương cụt (không nguồn nào cho luân xa này số đốt sống); cuống hoa đi qua tử cung và mở ra ở mặt trước cơ thể."}, "vishuddha": {"FB": "Rễ ở C3 (chương 19); cuống hoa cong xuống, đi qua thanh quản và mở ra ở mặt trước cổ họng."}}};
+  const textOf = (c, k) => { const f = sex === 'f' && TEXT_F[lang][c.id]; return (f && f[k]) || (lang === 'vi' ? CHAKRA_VI[c.id][k] : c.text[k]); };
+  const altOf = (c, n) => ((lang === 'vi' ? CHAKRA_VI[c.id].alt : c.altLabels) || [])[n] || '';
+
+  const cyan = 0x6fd3e6;
+  // Opening diameter: 2 x Leadbeater's 'about two inches' (5 cm), close to the openings in his full-body plate.
+  const FLOWER_D = 0.05 * 2;
+  const fd = c => FLOWER_D * (c.scale || 1);   // the pulmonary flowers are drawn smaller (no size is given)
+  // Petal counts and colours from Leadbeater's plates in "The Chakras" (1927).
+  // Colours are sampled by eye from the plates; each petal gets a small random shade variation.
+  const H = (hex) => new THREE.Color(hex);
+  const SPECS = {
+    muladhara:    { n: 4,   colors: i => i % 2 ? '#e8742a' : '#b8242a', hub: '#2a1210' },
+    svadhisthana: { n: 6,   colors: i => ['#c8302c', '#e8802a', '#e8c43a', '#7ab84a', '#4a7ac8', '#8a4ab0'][i], hub: '#f0a2b8' },
+    manipura:     { n: 10,  colors: i => i % 2 ? '#7a8a3a' : '#c0382e', hub: '#3a1c14' },
+    anahata:      { n: 12,  colors: i => i % 2 ? '#f0c040' : '#e6a830', hub: '#7a4a10' },
+    vishuddha:    { n: 16,  colors: i => i % 2 ? '#9ec0b4' : '#8fa6d0', hub: '#3a3448', silver: true },
+    // Leadbeater's plate splits the disc left/right: purplish-blue on the person's right (viewer's left), rose with yellow on the person's left.
+    // Petal 0 points to local +x, which is the body's left once the flower faces forward.
+    ajna:         { n: 96,  colors: i => (i >= 24 && i < 72) ? (i % 3 ? '#7466b0' : '#8a70a8') : (i % 3 ? '#e890a8' : '#eec070'), hub: '#3a2030' },
+    sahasrara:    { n: 960, colors: i => { const h = (0.74 + 0.22 * Math.sin(i * 0.37) + 0.08 * Math.sin(i * 1.7)) % 1; return '#' + new THREE.Color().setHSL(h, 0.55, 0.6).getHexString(); },
+                    hub: '#2a1a30', inner: { n: 12, colors: i => i % 2 ? '#fff3c4' : '#f2c84a', hub: '#e0a020' } },
+    // Hans 6 Oct 2026: colour and petal count unknown, so a plain round cream disc
+    pulmonary:    { n: 48, round: true, colors: () => '#efe3c4', hub: '#e2d1a6' },
+    pulmonary_l:  { n: 48, round: true, colors: () => '#efe3c4', hub: '#e2d1a6' },
+  };
+  // One flower: n scalloped petals around a hub, slightly dished like Leadbeater's "saucer-like depression".
+  function petalRing(spec, r0, R, dish) {
+    const n = spec.n, m = n > 200 ? 1 : n > 50 ? 2 : 6;
+    const pos = [], col = [], c = new THREE.Color();
+    const z = r => -dish * (1 - r / R);
+    for (let i = 0; i < n; i++) {
+      const base = H(spec.colors(i));
+      const a0 = (i / n) * Math.PI * 2, a1 = ((i + 1) / n) * Math.PI * 2;
+      for (let k = 0; k < m; k++) {
+        const t0 = k / m, t1 = (k + 1) / m;
+        const b0 = a0 + (a1 - a0) * t0, b1 = a0 + (a1 - a0) * t1;
+        const e0 = spec.round ? R : R * (0.84 + 0.16 * Math.sin(Math.PI * t0)), e1 = spec.round ? R : R * (0.84 + 0.16 * Math.sin(Math.PI * t1));
+        const quad = [[r0, b0], [e0, b0], [e1, b1], [r0, b0], [e1, b1], [r0, b1]];
+        quad.forEach(([r, a], q) => {
+          pos.push(Math.cos(a) * r, Math.sin(a) * r, z(r));
+          const outer = r > r0 * 1.01;
+          c.copy(base).offsetHSL(0, 0, outer ? 0.06 : -0.12);
+          if (spec.silver && outer) c.lerp(H('#e8eef6'), 0.35);
+          col.push(c.r, c.g, c.b);
+        });
+      }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    return new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }));
+  }
+  function flower(id, diameter) {
+    const spec = SPECS[id], g = new THREE.Group(), R = diameter / 2;
+    g.add(petalRing(spec, R * 0.16, R, R * 0.12));
+    const hub = new THREE.Mesh(new THREE.CircleGeometry(R * 0.16, 32), new THREE.MeshBasicMaterial({ color: H(spec.hub), side: THREE.DoubleSide }));
+    hub.position.z = -R * 0.12; g.add(hub);
+    if (spec.inner) g.add(segmentDome(spec.inner, R)); // the crown's inner 12: "the smaller dome of 12 rising out of that"
+    g.add(funnel(spec, R));
+    return g;
+  }
+  // The back of the flower: a funnel of the same petals and colours narrowing to where the stem enters, like the
+  // tube of a lily. It starts just behind the dished petals and closes FUNNEL_D behind the opening point.
+  const FUNNEL_D = 0.7;    // depth behind the dish, as a fraction of the flower's radius
+  function funnel(spec, R) {
+    const n = spec.n, m = n > 200 ? 1 : n > 50 ? 2 : 4, rows = 10, dish = R * 0.12;
+    const rTop = R * 0.55, rBot = R * 0.035, zTop = -dish * (1 - rTop / R) - 0.0008, D = R * FUNNEL_D;
+    const zBot = -(dish + D);   // the narrow end, where the stem arrives
+    const ring = t => [rBot + (rTop - rBot) * (1 - t) * (1 - t), zTop + (zBot - zTop) * t];
+    const pos = [], col = [], c = new THREE.Color();
+    for (let i = 0; i < n; i++) {
+      const base = H(spec.colors(i)), a0 = (i / n) * Math.PI * 2, a1 = ((i + 1) / n) * Math.PI * 2;
+      for (let k = 0; k < m; k++) for (let j = 0; j < rows; j++) {
+        const b0 = a0 + (a1 - a0) * k / m, b1 = a0 + (a1 - a0) * (k + 1) / m, t0 = j / rows, t1 = (j + 1) / rows;
+        const edge = spec.round ? () => 0 : u => -0.1 * (1 - Math.sin(Math.PI * u));          // darker seams between petals
+        const pt = (t, b, u) => { const [r, z] = ring(t); pos.push(Math.cos(b) * r, Math.sin(b) * r, z);
+          c.copy(base).offsetHSL(0, 0, -0.28 * t + edge(u)); col.push(c.r, c.g, c.b); };
+        const u0 = k / m, u1 = (k + 1) / m;
+        pt(t0, b0, u0); pt(t1, b0, u0); pt(t1, b1, u1); pt(t0, b0, u0); pt(t1, b1, u1); pt(t0, b1, u1);
+      }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    return new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }));
+  }
+  // The crown's inner 12 as a dome of wedges, like the segments of an orange, rising out of the flower
+  // (Leadbeater's Buddha-head protuberance). The wedges meet at the axis; the gaps between them show gold faces.
+  function segmentDome(spec, R) {
+    const n = spec.n, rho = R * 0.34, zc = rho * 0.45, gap = 0.035, rows = 18, cols = 6;
+    const cosMax = (-R * 0.08 - zc) / rho, thMax = Math.acos(Math.max(-1, cosMax));
+    const pos = [], nor = [], col = [], c = new THREE.Color(), heart = H(spec.hub);
+    const P = (th, a) => [rho * Math.sin(th) * Math.cos(a), rho * Math.sin(th) * Math.sin(a), zc + rho * Math.cos(th)];
+    const tri = (pts, ns, color) => pts.forEach((p, i) => { pos.push(...p); nor.push(...ns[i]); col.push(color.r, color.g, color.b); });
+    for (let i = 0; i < n; i++) {
+      const a0 = (i / n) * Math.PI * 2 + gap, a1 = ((i + 1) / n) * Math.PI * 2 - gap, base = H(spec.colors(i));
+      for (let r = 0; r < rows; r++) for (let k = 0; k < cols; k++) { // outer skin of the wedge
+        const t0 = thMax * r / rows, t1 = thMax * (r + 1) / rows;
+        const b0 = a0 + (a1 - a0) * k / cols, b1 = a0 + (a1 - a0) * (k + 1) / cols;
+        const q = [P(t0, b0), P(t1, b0), P(t1, b1), P(t0, b0), P(t1, b1), P(t0, b1)];
+        const ns = q.map(p => { const v = new THREE.Vector3(p[0], p[1], p[2] - zc).normalize(); return [v.x, v.y, v.z]; });
+        c.copy(base).lerp(heart, 0.25 * (r / rows)); // a little more gold toward the base
+        tri(q, ns, c);
+      }
+      const bottom = [0, 0, zc + rho * Math.cos(thMax)], centre = [0, 0, zc];
+      [[a0, -1], [a1, 1]].forEach(([a, s]) => { // the two flat sides, gold "in its heart"
+        const nv = [-Math.sin(a) * s, Math.cos(a) * s, 0], ns = [nv, nv, nv];
+        for (let r = 0; r < rows; r++) tri([centre, P(thMax * r / rows, a), P(thMax * (r + 1) / rows, a)], ns, heart);
+        tri([centre, P(thMax, a), bottom], ns, heart);
+      });
+      for (let k = 0; k < cols; k++) { // base cap
+        const b0 = a0 + (a1 - a0) * k / cols, b1 = a0 + (a1 - a0) * (k + 1) / cols;
+        tri([bottom, P(thMax, b1), P(thMax, b0)], [[0, 0, -1], [0, 0, -1], [0, 0, -1]], heart);
+      }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, roughness: 0.45, metalness: 0.1, emissive: 0x3a2a08 }));
+  }
+  function orientTo(obj, normal) {
+    const n = new THREE.Vector3(...normal).normalize();
+    obj.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), n);
+  }
+  function stem(pts, color, dashed, radius) {
+    const curve = pts.length > 2 ? new THREE.CatmullRomCurve3(pts, false, 'centripetal') : new THREE.LineCurve3(pts[0], pts[1]);
+    const g = new THREE.Group();
+    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(curve.getPoints(48)),
+      dashed ? new THREE.LineDashedMaterial({ color, dashSize: 0.008, gapSize: 0.006, transparent: true, opacity: 0.95 }) : new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.95 }));
+    if (dashed) line.computeLineDistances(); g.add(line);
+    if (!dashed) g.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 48, radius || 0.0016, 8, false), new THREE.MeshStandardMaterial({ color, emissive: 0x114455, roughness: 0.4 })));
+    return g;
+  }
+  function bead(p, color, r) {
+    const m = new THREE.Mesh(new THREE.SphereGeometry(r || 0.004, 20, 14), new THREE.MeshStandardMaterial({ color, emissive: 0x0c3d48, roughness: 0.3 }));
+    m.position.copy(p); return m;
+  }
+
+  const labelItems = [];
+  const bookGroup = new THREE.Group(); bookGroup.visible = false; scene.add(bookGroup);
+  // Stem path: leave the root heading forward, then curve down (or up) through the organ to the flower.
+  function droop(r, organ, open) {
+    const lead = new THREE.Vector3(r.x, r.y + (open.y - r.y) * 0.12, r.z + (open.z - r.z) * 0.35);
+    // Hans 1 Oct 2026: if the lead point would sit in front of the organ (Muladhara: the ganglion is just in front
+    // of the sacrum), the stem overshoots and hooks back. Go straight from the root through the organ instead.
+    if (organ && lead.z - r.z > organ.z - r.z) return [r, organ, open];
+    return organ ? [r, lead, organ, open] : [r, lead, open];
+  }
+  // Hans 1 Oct 2026: the Muladhara stem leaves the back of its flower along the flower's axis, then curves gently back to
+  // the coccygeal ganglion (bulging forward, away from the coccyx) and on up to its root at S4, leaving the sacrum at S4.
+  function fromFlower(r, organ, end, normal, via) {
+    const out = new THREE.Vector3(...normal).normalize().negate();          // the flower's axis, out of its back
+    const chord = organ.clone().sub(end), L = chord.length(), cdir = chord.clone().normalize();
+    const atOrgan = cdir.clone().multiplyScalar(2 * out.dot(cdir)).sub(out).normalize();   // mirror of the axis: a symmetric arc
+    const a = new THREE.CubicBezierCurve3(end, end.clone().addScaledVector(out, L * 0.4), organ.clone().addScaledVector(atOrgan, -L * 0.4), organ);
+    // Hans 1 Oct 2026: from the ganglion the stem runs up in front of S5 and enters the sacrum at S4, through its front
+    // (the via points, 3 mm in front of the bone), then straight back to the root in the canal.
+    if (via.length) return [r, ...via, ...a.getPoints(24).reverse()];
+    const M = r.distanceTo(organ);
+    const b = new THREE.CubicBezierCurve3(organ, organ.clone().addScaledVector(atOrgan, M * 0.35), r.clone().addScaledVector(organ.clone().sub(r).normalize(), M * 0.35), r);
+    return [...b.getPoints(12).reverse(), ...a.getPoints(24).reverse().slice(1)];   // root first, like the other stems
+  }
+  // Hans 2 Oct 2026: the solar (celiac) plexus, which neither 3D dataset has, drawn after Gray's Anatomy (1918) fig. 847
+  // (Henle): two irregular celiac ganglia, one each side of the aorta where the celiac trunk leaves it, joined by a net of
+  // nerve strands around the trunk. o = where the trunk leaves the aorta (its back end), d = the trunk's direction.
+  const NERVE = 0xf0d98c;
+  function solarPlexus(o, d, spineX) {
+    const grp = new THREE.Group(), mat = new THREE.MeshStandardMaterial({ color: NERVE, roughness: 0.55 });
+    const aorta = o.clone().add(new THREE.Vector3(0, 0, -0.012));          // centre of the aorta, about 12 mm behind the origin
+    if (spineX != null) aorta.x = spineX;                                  // Hans 2 Oct 2026: centred on the spine, not on the trunk
+    const gang = [];
+    [-1, 1].forEach(sx => {                                                 // sx -1: the figure's right; +1: its left
+      const geo = new THREE.SphereGeometry(1, 22, 16), p = geo.attributes.position;
+      for (let i = 0; i < p.count; i++) {                                   // a lumpy, irregular surface
+        const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+        const k = 1 + 0.18 * Math.sin(5.1 * x + 3.3 * y + sx) * Math.cos(4.3 * y - 2.7 * z) + 0.08 * Math.sin(11 * y + 7 * x);
+        p.setXYZ(i, x * k, y * k, z * k);
+      }
+      geo.computeVertexNormals();
+      const m = new THREE.Mesh(geo, mat); m.scale.set(0.0045, 0.011, 0.0032);
+      m.position.copy(aorta).add(new THREE.Vector3(sx * 0.018, -0.006, 0.003));   // Hans 2 Oct 2026: both at the same depth (was: the right 4 mm further back, behind the vena cava, which we do not draw)
+      m.rotation.z = sx * 0.25; grp.add(m); gang.push(m.position.clone());
+    });
+    const strand = (pts, r) => grp.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false, 'centripetal'), 24, r || 0.0006, 6, false), mat));
+    const [R, L] = gang, front = z => aorta.z + 0.0125 + z;
+    // strands from ganglion to ganglion across the front of the aorta, above, at and below the trunk
+    [[0.008, 0.002], [0.003, 0.004], [-0.004, 0.004], [-0.011, 0.002], [-0.017, 0.001]].forEach(([dy, dz]) => {
+      strand([R.clone().add(new THREE.Vector3(0.003, dy * 0.6, 0)), new THREE.Vector3(aorta.x - 0.007, o.y + dy, front(dz) - 0.002),
+              new THREE.Vector3(aorta.x, o.y + dy * 1.1, front(dz)), new THREE.Vector3(aorta.x + 0.007, o.y + dy, front(dz) - 0.002),
+              L.clone().add(new THREE.Vector3(-0.003, dy * 0.6, 0))]);
+    });
+    // (Hans 2 Oct 2026: the celiac trunk is no longer drawn, so the ring of fibres that wrapped it is gone too)
+    // a few fibres running on from each ganglion, up toward the diaphragm and down along the aorta
+    gang.forEach((G, n) => { const sx = n ? 1 : -1;
+      strand([G.clone().add(new THREE.Vector3(sx * 0.002, 0.009, 0)), G.clone().add(new THREE.Vector3(sx * 0.006, 0.02, -0.004)), G.clone().add(new THREE.Vector3(sx * 0.01, 0.032, -0.01))]);
+      strand([G.clone().add(new THREE.Vector3(-sx * 0.002, -0.009, 0)), new THREE.Vector3(aorta.x + sx * 0.008, G.y - 0.022, front(0) - 0.001), new THREE.Vector3(aorta.x + sx * 0.004, G.y - 0.036, front(0))]);
+    });
+    return grp;
+  }
+  // The two lowest stems cross (Svadhisthana root at the coccyx tip, Muladhara root at S4). Both lie on the
+  // midline, so bend the Svadhisthana stem a few millimetres sideways where it passes the other one.
+  const spline = pts => new THREE.CatmullRomCurve3(pts, false, 'centripetal');
+  function closest(A, B) {
+    let best = { d: Infinity, t: 0, p: null };
+    for (let i = 0; i <= 240; i++) {
+      const pa = A.getPoint(i / 240);
+      for (let j = 0; j <= 240; j++) { const d = pa.distanceTo(B.getPoint(j / 240)); if (d < best.d) best = { d, t: i / 240, p: pa }; }
+    }
+    return best;
+  }
+  function clearOf(pts, other, gap) {
+    const hit = closest(spline(pts), spline(other));
+    if (hit.d >= gap) return pts;
+    const out = pts.map(p => p.clone());
+    let k = -1, kd = Infinity;
+    out.forEach((p, i) => { const d = p.distanceTo(hit.p); if (i > 0 && i < out.length - 1 && d < kd) { kd = d; k = i; } });
+    if (k > 0 && kd < 0.01) { out[k].x += gap; return out; }          // nudge the nearby control point
+    const bump = hit.p.clone(); bump.x += gap;                          // or add one just at the crossing
+    const at = Math.min(out.length - 2, Math.floor(hit.t * (out.length - 1)));
+    out.splice(at + 1, 0, bump);
+    return out;
+  }
+  const stemPts = {};
+  // Hans 6 Oct 2026: the anterior and posterior pulmonary plexuses on each lung root, after Gray's Anatomy (1918), p. 913:
+  // branches of the vagus, joined by sympathetic filaments, spread over the front of the root of the lung (the anterior plexus)
+  // and, larger and more numerous, over its back (the posterior plexus). Drawn as a loose net of nerve strands; the positions
+  // are measured from the bronchus, pulmonary artery and veins at the lung root (measure_plexus.py; none of them is drawn).
+  function pulmonaryPlexus(px, sx) {
+    const grp = new THREE.Group(), mat = new THREE.MeshStandardMaterial({ color: NERVE, roughness: 0.55 });
+    const strand = (pts, r) => grp.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false, 'centripetal'), 20, r || 0.0006, 6, false), mat));
+    const up = new THREE.Vector3(0, 1, 0), out = new THREE.Vector3(px.out[0], 0, px.out[2]).normalize();
+    [['front', 1, 1], ['back', -1, 1.3]].forEach(([k, face, big]) => {
+      const c = new THREE.Vector3(...px[k]), w = px.w * big, h = px.h * big, n = new THREE.Vector3(0, 0, face);
+      const at = (u, v, d) => c.clone().addScaledVector(out, u * w / 2).addScaledVector(up, v * h / 2).addScaledVector(n, d || 0);
+      const rows = big > 1 ? [-0.75, -0.25, 0.25, 0.75] : [-0.6, 0, 0.6], cols = big > 1 ? [-0.6, -0.1, 0.4, 0.85] : [-0.5, 0.1, 0.7];
+      rows.forEach((v, i) => strand([-1, -0.5, 0, 0.5, 1].map((u, j) => at(u, v + 0.12 * Math.sin(3 * u + i), 0.0015 * ((i + j) % 2 ? 1 : -1)))));
+      cols.forEach((u, i) => strand([-1, -0.33, 0.33, 1].map((v, j) => at(u + 0.1 * Math.sin(2 * v + i), v, 0.0012 * ((i + j) % 2 ? -1 : 1)))));
+      [[-0.5, 0.25], [0.1, -0.55], [0.6, 0.35]].forEach(([u, v]) => {           // small ganglia where strands meet
+        const g = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 9), mat); g.scale.set(0.0018, 0.0014, 0.0012); g.position.copy(at(u, v)); grp.add(g);
+      });
+      // branches of the vagus arriving from the midline, and sympathetic filaments from behind
+      strand([at(-1, 0.4), at(-1.6, 0.6, -0.002), at(-2.3, 0.9, -0.004)]);
+      strand([at(-1, -0.3), at(-1.7, -0.2, -0.003), at(-2.4, 0.1, -0.006)]);
+    });
+    return grp;
+  }
+  function buildChakras(A) {
+    chakras.forEach(c => {
+      const a = A[c.id], g = new THREE.Group(); g.userData.id = c.id;
+      if (!a) return;
+      if (a.normal) { c.normal = a.normal; c.nrm = null; }   // the pulmonary flowers face out of the chest surface
+      if (a.scale) c.scale = a.scale;                         // and are drawn smaller (size measured in measure_lungs.py)
+      const V = p => new THREE.Vector3(...p);
+      const open = V(a.open); c.openY = open.y; c.openPos = open; c.samples = null; c.rootLevel = a.root ? a.level : null;
+      const f = flower(c.id, fd(c)); f.position.copy(open); orientTo(f, c.normal); g.add(f);
+      // Stems end at the narrow end of the flower's funnel, so nothing pokes through the front.
+      const end = open.clone().addScaledVector(new THREE.Vector3(...c.normal).normalize(), -(fd(c) / 2) * (0.12 + FUNNEL_D) + 0.001);
+      if (a.root) {
+        const r = V(a.root); g.add(bead(r, cyan));
+        if (c.id === 'muladhara' && a.organ) {
+          // Hans 1 Oct 2026: draw the coccygeal ganglion (ganglion impar), which neither 3D dataset has: a small oval on
+          // the midline in front of the coccyx, in the spinal cord's colour (Lee et al., Korean J Pain 2023, figs 3 and 5).
+          const gi = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), new THREE.MeshStandardMaterial({ color: 0xf0d98c, roughness: 0.55 }));
+          gi.scale.set(0.003, 0.004, 0.0025); gi.position.copy(V(a.organ)); g.add(gi);
+        }
+        if (c.id === 'manipura' && a.plexus) g.add(solarPlexus(V(a.plexus.origin), V(a.plexus.dir), a.plexus.spine_x));
+        let pts = c.id === 'muladhara' && a.organ ? fromFlower(r, V(a.organ), end, c.normal, (a.via || []).map(V))
+          // Hans 1 Oct 2026: the Vishuddha flower's funnel already reaches back into the thyroid, so its stem runs straight
+          // from the root to the base of the flower instead of detouring to the thyroid's centre.
+          : c.id === 'vishuddha' ? [r, end]
+          : droop(r, a.organ ? V(a.organ) : null, end);
+        if (c.id === 'svadhisthana' && stemPts.muladhara) {
+          pts = clearOf(pts, stemPts.muladhara, 0.006);
+          window.__stemGap = closest(spline(pts), spline(stemPts.muladhara)).d;   // checked in testing
+        }
+        stemPts[c.id] = pts;
+        g.add(stem(pts, cyan, false));
+        // Hans 1 Oct 2026: no vertebra label on the model; the root is listed in the panel's details instead
+      }
+      if (a.root_alt) a.root_alt.forEach((ar, n) => {
+        const p = V(ar); g.add(bead(p, 0xf2a7c9, 0.0035)); g.add(stem(droop(p, a.organ ? V(a.organ) : null, end), 0xf2a7c9, true));
+        labelItems.push({ text: () => altOf(c, n), pos: p, cls: 'organ', group: 'chakra', id: c.id });
+      });
+      // Hans 1 Oct 2026: no root sphere for the Sahasrara (it does not join the spine; the sphere hid the pineal gland).
+      // Its stem starts at the centre of the pineal gland, so it ends inside the gland.
+      if (a.axisFrom) { const p = V(a.axisFrom); g.add(stem([p, end], cyan, false)); }
+      // Hans 6 Oct 2026: the pulmonary chakras have no root on the spine. Each stem's root is in its own lung, where the main
+      // bronchus enters (measured from the lungs, which are not drawn and not downloaded by the page).
+      if (a.lungRoot) { const p = V(a.lungRoot); g.add(bead(p, cyan, 0.0035)); g.add(stem([p, end], cyan, false)); }
+      if (a.lungRoot && a.plexus) {             // (the Manipura's 'plexus' is the solar plexus, drawn above)
+        g.add(pulmonaryPlexus(a.plexus, c.twinOf ? 1 : -1));
+        labelItems.push({ text: () => ({ en: 'pulmonary plexus', vi: 'đám rối phổi', es: 'plexo pulmonar' })[lang], pos: V(a.plexus.front), cls: 'organ', group: 'organ' });
+      }
+      if (a.root_same && c.id !== 'svadhisthana') {
+        const b = V(a.root_same); const bg = new THREE.Group();
+        bg.add(bead(b, 0x9aa3b5, 0.0035)); bg.add(stem(droop(b, a.organ ? V(a.organ) : null, end), 0x9aa3b5, true)); bookGroup.add(bg);
+        labelItems.push({ text: () => T('samePrefix') + lvl(a.level_same), pos: b, cls: 'organ', group: 'book', id: c.id });
+      }
+      // Hans 6 Oct 2026: one label for the pair of pulmonary chakras, beside whichever of the two flowers is nearer the camera
+      if (!c.twinOf) labelItems.push({ text: () => nameOf(c).replace(/^\d · /, ''), pos: open, cls: 'chakra', group: 'chakra', id: c.id, fid: c.id,
+                                       pair: c.extra ? [c.id, c.id + '_l'] : null });
+      // Hans 6 Oct 2026: when a chakra is selected the others fade. Flowers are drawn before stems, beads and plexuses, so a
+      // faded flower hides what lies behind it the same way it hides the organs (a stem no longer shows through it).
+      g.traverse(o => { o.renderOrder = 2; }); f.traverse(o => { o.renderOrder = 1; });
+      chakraGroup.add(g); c.group = g;
+    });
+  }
+
+  // Anatomy: BodyParts3D 4.3 (DBCLS), simplified; positions int16 in 0.1 mm.
+  const LANDMARK_LAYER = { 'anus': 'skin', 'root of the genitals': 'skin', 'navel': 'skin', 'prostate': 'pelvic', 'vaginal opening': 'skin', 'uterus': 'pelvic', 'larynx': 'glands', 'carotid plexus': 'carotid', 'cavernous plexus': 'carotid', 'heart': 'heart', 'thyroid': 'glands', 'pituitary': 'glands', 'pineal': 'glands', 'coccyx (estimated)': 'spine', 'coccygeal ganglion': 'spine', 'sacrum tip': 'spine' };
+  const SHOW_LANDMARKS = { m: ['coccygeal ganglion', 'anus', 'navel', 'celiac plexus (solar plexus)', 'prostate', 'thyroid', 'pituitary', 'pineal'],
+                           f: ['coccygeal ganglion', 'anus', 'vaginal opening', 'navel', 'celiac plexus (solar plexus)', 'uterus', 'larynx', 'pituitary', 'pineal'] };
+  const groupOn = {};
+  // Occlusion: a label is hidden when its point is behind a solid layer or a flower. The skin and arms are
+  // see-through and hide nothing. Each solid layer's triangles are kept in 3 cm slices by height, so a line of
+  // sight only tests the slices whose box it crosses.
+  const OCCLUDERS = new Set(['spine', 'discs', 'neuro', 'heart', 'glands', 'pelvic']);
+  let occBins = [];
+  function binTriangles(group, pos, idx) {
+    const BIN = 0.03, bins = new Map();
+    for (let t = 0; t < idx.length; t += 3) {
+      const a = idx[t] * 3, b = idx[t + 1] * 3, c = idx[t + 2] * 3;
+      const k = Math.floor((pos[a + 1] + pos[b + 1] + pos[c + 1]) / 3 / BIN);
+      let arr = bins.get(k); if (!arr) bins.set(k, arr = []);
+      arr.push(pos[a], pos[a + 1], pos[a + 2], pos[b], pos[b + 1], pos[b + 2], pos[c], pos[c + 1], pos[c + 2]);
+    }
+    bins.forEach(arr => {
+      const tri = new Float32Array(arr), min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
+      for (let i = 0; i < tri.length; i++) { const k = i % 3; if (tri[i] < min[k]) min[k] = tri[i]; if (tri[i] > max[k]) max[k] = tri[i]; }
+      occBins.push({ group, min, max, tri });
+    });
+  }
+  // Is the segment from the camera o to the point p (stopping tol short of p) blocked? With `nearest`, the
+  // first thing it meets instead: { t, group }, t the distance from o, or null.
+  function blocked(o, p, tol, skipGroup, skipFlower, nearest) {
+    const dx = p.x - o.x, dy = p.y - o.y, dz = p.z - o.z, len = Math.hypot(dx, dy, dz);
+    let tMax = len - tol, best = null;
+    if (tMax <= 0) return nearest ? null : false;
+    const d = [dx / len, dy / len, dz / len], O = [o.x, o.y, o.z];
+    for (const c of chakras) {                             // flowers: discs of the drawn size
+      if (!c.openPos || c.id === skipFlower || skipFlower === '*') continue;
+      const n = c.nrm || (c.nrm = new THREE.Vector3(...c.normal).normalize());
+      const den = d[0] * n.x + d[1] * n.y + d[2] * n.z; if (Math.abs(den) < 1e-6) continue;
+      const t = ((c.openPos.x - o.x) * n.x + (c.openPos.y - o.y) * n.y + (c.openPos.z - o.z) * n.z) / den;
+      if (t <= 0 || t >= tMax) continue;
+      if (Math.hypot(o.x + t * d[0] - c.openPos.x, o.y + t * d[1] - c.openPos.y, o.z + t * d[2] - c.openPos.z) < fd(c) * 0.42) {
+        if (!nearest) return true; best = { t, group: 'flower' }; tMax = t;
+      }
+    }
+    for (const bin of occBins) {
+      if (bin.group === skipGroup || !groupOn[bin.group]) continue;
+      let t0 = 0, t1 = tMax;                               // slab test against the slice's box
+      for (let k = 0; k < 3 && t0 <= t1; k++) {
+        if (Math.abs(d[k]) < 1e-12) { if (O[k] < bin.min[k] || O[k] > bin.max[k]) t0 = 2, t1 = 1; continue; }
+        let a = (bin.min[k] - O[k]) / d[k], b = (bin.max[k] - O[k]) / d[k]; if (a > b) [a, b] = [b, a];
+        if (a > t0) t0 = a; if (b < t1) t1 = b;
+      }
+      if (t0 > t1) continue;
+      const T = bin.tri;
+      for (let i = 0; i < T.length; i += 9) {             // Moller-Trumbore
+        const e1x = T[i + 3] - T[i], e1y = T[i + 4] - T[i + 1], e1z = T[i + 5] - T[i + 2];
+        const e2x = T[i + 6] - T[i], e2y = T[i + 7] - T[i + 1], e2z = T[i + 8] - T[i + 2];
+        const px = d[1] * e2z - d[2] * e2y, py = d[2] * e2x - d[0] * e2z, pz = d[0] * e2y - d[1] * e2x;
+        const det = e1x * px + e1y * py + e1z * pz; if (det > -1e-12 && det < 1e-12) continue;
+        const inv = 1 / det, sx = O[0] - T[i], sy = O[1] - T[i + 1], sz = O[2] - T[i + 2];
+        const u = (sx * px + sy * py + sz * pz) * inv; if (u < 0 || u > 1) continue;
+        const qx = sy * e1z - sz * e1y, qy = sz * e1x - sx * e1z, qz = sx * e1y - sy * e1x;
+        const w = (d[0] * qx + d[1] * qy + d[2] * qz) * inv; if (w < 0 || u + w > 1) continue;
+        const t = (e2x * qx + e2y * qy + e2z * qz) * inv;
+        if (t > 1e-4 && t < tMax) { if (!nearest) return true; best = { t, group: bin.group }; tMax = t; }
+      }
+    }
+    return nearest ? best : false;
+  }
+  function buildAnatomy(meta, buf) {
+    const layersEl = document.getElementById('layers');
+    const groups = {};
+    meta.layers.forEach(L => {
+      const pos16 = new Int16Array(buf, L.positions[0], L.positions[1] / 2);
+      const pos = new Float32Array(pos16.length); for (let i = 0; i < pos16.length; i++) pos[i] = pos16[i] * 0.0001;
+      const idx = new Uint32Array(buf, L.indices[0], L.indices[1] / 4);
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      geo.setIndex(new THREE.BufferAttribute(idx, 1));
+      geo.computeVertexNormals();
+      const piece = new THREE.Group();
+      if (L.group === 'skin') {
+        // Draw only the nearest skin surface: a depth-only pass, then one colour pass that matches it exactly.
+        const depth = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: true, transparent: true, side: THREE.DoubleSide }));
+        depth.renderOrder = 5;
+        const skin = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: new THREE.Color(L.color), transparent: true, opacity: 0.3,
+          roughness: 0.8, metalness: 0, depthWrite: false, depthFunc: THREE.LessEqualDepth, side: THREE.DoubleSide }));
+        skin.renderOrder = 6;
+        piece.add(depth, skin);
+      } else {
+        const see = L.opacity < 0.99;
+        const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: new THREE.Color(L.color), transparent: see, opacity: L.opacity, roughness: 0.65, metalness: 0,
+          depthWrite: !see || L.opacity > 0.5, side: THREE.FrontSide }));
+        mesh.renderOrder = see ? 2 : 0;
+        if (OCCLUDERS.has(L.group)) binTriangles(L.group, pos, idx);
+        piece.add(mesh);
+      }
+      if (!groups[L.group]) {
+        groups[L.group] = new THREE.Group(); anatomyGroup.add(groups[L.group]); layerGroups[L.group] = groups[L.group]; groupOn[L.group] = true;
+        const id = 'layer-' + L.group;
+        const lab = document.createElement('label'); lab.htmlFor = id;
+        const vi = (meta.sex === 'female' && LAYERS_VI_F[L.group]) || LAYERS_VI[L.group] || L.label;
+        const es = (meta.sex === 'female' && LAYERS_ES_F[L.group]) || LAYERS_ES[L.group] || L.label;
+        lab.innerHTML = `<input type="checkbox" id="${id}" checked><i style="background:${L.color}"></i><span class="layer-name" data-en="${L.label}" data-vi="${vi}" data-es="${es}"></span>`;
+        lab.querySelector('.layer-name').textContent = lang === 'vi' ? vi : lang === 'es' ? es : L.label;
+        lab.querySelector('input').onchange = ev => { groupOn[L.group] = ev.target.checked; groups[L.group].visible = ev.target.checked; };
+        layersEl.appendChild(lab);
+      }
+      groups[L.group].add(piece); layerGroups[L.id] = piece;
+    });
+    SHOW_LANDMARKS[meta.sex === 'female' ? 'f' : 'm'].forEach(n => labelItems.push({ text: () => lang === 'vi' ? LAND_VI[n] : lang === 'es' ? (LAND_ES[n] || n) : n, pos: new THREE.Vector3(...meta.landmarks[n]), cls: 'organ', group: 'organ', layer: LANDMARK_LAYER[n] }));
+  }
+
+  // Labels
+  let allLabels = [];
+  function buildLabels() {
+    allLabels = labelItems.map(l => {
+      const el = document.createElement('div'); el.className = 'lbl ' + (l.cls === 'organ' ? 'organ' : 'chakra'); el.textContent = typeof l.text === 'function' ? l.text() : l.text;
+      labelsEl.appendChild(el); return Object.assign(l, { el, w: null, slot: -1 });
+    });
+  }
+
+  // Side panel
+  const list = document.getElementById('list');
+  let current = null, homeView = null;
+  function renderList() {
+    list.innerHTML = '';
+    // crown first, as the flowers stand on the figure; then the pulmonary chakras below the seven (Hans 6 Oct 2026)
+    [...chakras.filter(c => !c.extra).reverse(), ...chakras.filter(c => c.extra && !c.twinOf)].forEach(c => {
+      const li = document.createElement('li');
+      li.className = 'item' + (c.extra ? ' extra' : ''); li.tabIndex = 0; li.setAttribute('role', 'button'); li.dataset.id = c.id;
+      li.setAttribute('aria-current', c.id === current ? 'true' : 'false');
+      li.innerHTML = `<div class="top"><span><b>${nameOf(c)}</b> <span class="church">${churchOf(c)}</span></span>
+</div>
+        <div class="detail">${COLS.map(k => `<span><b>${T('col_' + k)}:</b> ${TABLE[lang][c.id][k]}</span>`).join('')}</div>`;
+      const pick = () => select(c.id, true);
+      li.addEventListener('click', pick);
+      li.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+      list.appendChild(li);
+    });
+  }
+  function applyLang() {
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = T(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = T(el.dataset.i18nHtml); });
+    document.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', T(el.dataset.i18nAria)); });
+    document.getElementById('lang-vi').setAttribute('aria-pressed', String(lang === 'vi'));
+    document.getElementById('lang-en').setAttribute('aria-pressed', String(lang === 'en'));
+    document.getElementById('lang-es').setAttribute('aria-pressed', String(lang === 'es'));
+    document.getElementById('sex-m').setAttribute('aria-pressed', String(sex === 'm'));
+    document.getElementById('sex-f').setAttribute('aria-pressed', String(sex === 'f'));
+    document.querySelectorAll('.layer-name').forEach(el => { el.textContent = el.dataset[lang]; });
+    allLabels.forEach(l => { l.el.textContent = typeof l.text === 'function' ? l.text() : l.text; l.w = null; });
+    renderList(); forceFrames = 3;
+  }
+  function setLang(l) { lang = l; try { localStorage.setItem('chakra3d-lang', l); } catch (_) {} applyLang(); }
+  document.getElementById('lang-vi').onclick = () => setLang('vi');
+  document.getElementById('lang-en').onclick = () => setLang('en');
+  document.getElementById('lang-es').onclick = () => setLang('es');
+
+  // Camera animation
+    function flyTo(target, pos) {
+    anim = { t: 0, fromT: controls.target.clone(), toT: target.clone(), fromP: camera.position.clone(), toP: pos.clone() };
+    tiltBase = null; tiltPivot = null;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) anim.t = 1;
+  }
+  // Camera distances are tuned for a wide window; step back when the panel leaves less free space.
+  function viewScale() {
+    const w = stage.clientWidth || 1, h = stage.clientHeight || 1, a = document.querySelector('aside').getBoundingClientRect();
+    let fw = w, fh = h, full = h;
+    if (!document.body.classList.contains('panel-off') && a.width && a.height) {
+      if (a.top > 40) { fh = a.top; full = h + (h - a.top); } else fw = a.left;
+    }
+    const span = px => 2 * Math.tan(camera.fov * Math.PI / 360) * px / full;
+    return Math.max(1, 1.3 / span(fh) / 2.6, 0.8 / span(fw) / 2.6);
+  }
+  function viewDir(dir, dist, targetY) {
+    const t = new THREE.Vector3(0, targetY, 0);
+    return [t, t.clone().add(new THREE.Vector3(...dir).normalize().multiplyScalar(dist * viewScale()))];
+  }
+  function select(id, fly) {
+    if (id && id === current) {             // second click: close and zoom back out
+      current = null;
+      document.querySelectorAll('.item').forEach(el => el.setAttribute('aria-current', 'false'));
+      chakras.forEach(c => c.group && c.group.traverse(o => { if (o.material) { o.material.opacity = o.isLine ? 0.95 : 1; o.material.transparent = !!o.isLine; } }));
+      if (homeView) { flyTo(homeView[0], homeView[1]); homeView = null; }
+      return;
+    }
+    if (!current) homeView = [controls.target.clone(), camera.position.clone()];
+    current = id;
+    document.querySelectorAll('.item').forEach(el => el.setAttribute('aria-current', el.dataset.id === id ? 'true' : 'false'));
+    chakras.forEach(c => { const on = !id || c.id === id || c.twinOf === id;
+      c.group && c.group.traverse(o => { if (o.material) { o.material.transparent = !on || !!o.isLine; o.material.opacity = on ? (o.isLine ? 0.95 : 1) : 0.22; } }); });
+    if (fly) {
+      const c = chakras.find(x => x.id === id), tw = chakras.find(x => x.twinOf === id);
+      const op = tw && tw.openPos ? c.openPos.clone().add(tw.openPos).multiplyScalar(0.5) : c.openPos;   // a pair: between its flowers
+      const [t, p] = viewDir([0.9, 0.25, 1.1], 0.6, op.y);
+      const shift = new THREE.Vector3(op.x / 2, 0, op.z / 2);   // aim between the spine and the flower
+      flyTo(t.add(shift), p.add(shift));
+    }
+  }
+
+  const views = {
+    front: () => viewDir([0, 0.05, 1], 3.0, 1.05),
+    side: () => viewDir([1, 0.05, 0], 3.0, 1.05),
+    back: () => viewDir([0, 0.05, -1], 3.0, 1.05),
+    top: () => viewDir([0.001, 1, 0.25], 1.7, 1.2),
+  };
+  document.getElementById('v-front').onclick = () => flyTo(...views.front());
+  document.getElementById('v-side').onclick = () => flyTo(...views.side());
+  // Chakra names and organ labels are switched separately (Hans, 1 Oct 2026)
+  const tLblChakra = document.getElementById('t-lbl-chakra'), tLblOrgan = document.getElementById('t-lbl-organ');
+  tLblChakra.onchange = tLblOrgan.onchange = () => { forceFrames = 3; };
+  const tArm = document.getElementById('t-arm'), tBook = document.getElementById('t-book');
+  tBook.onchange = () => { bookGroup.visible = tBook.checked; };
+  // Hide the arm on the side the camera is looking from, when it would stand between the camera and the body.
+  const dcam = new THREE.Vector3();
+  function updateArms() {
+    if (!layerGroups.arm_left) return;
+    dcam.copy(camera.position).sub(controls.target);
+    const az = Math.atan2(dcam.x, dcam.z) * 180 / Math.PI;   // 0 = front, +90 = the figure's left side
+    const on = groupOn.skin !== false, auto = tArm.checked;
+    // Hans 2 Oct 2026: the female forearms point forward, so her nearer arm hides from further round toward the front:
+    // from 30 degrees, which includes the view a chakra click flies to (about 39 degrees), so her hand no longer
+    // covers the Muladhara. The male arms hang at the sides and keep 60.
+    const from = sex === 'f' ? 30 : 60;
+    layerGroups.arm_left.visible = on && !(auto && az > from && az < 120);
+    layerGroups.arm_right.visible = on && !(auto && az < -from && az > -120);
+  }
+
+  // Initial view: three-quarter from the front-left, whole torso and head in frame
+  const [t0, p0] = viewDir([0.75, 0.12, 1], 2.6, 1.2);
+  controls.target.copy(t0); camera.position.copy(p0);
+
+  // The panel floats over the right side (bottom on narrow screens); shift the view so the
+  // figure is centred in the part of the window the panel leaves free.
+  const aside = document.querySelector('aside');
+  function resize() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false);
+    let ox = 0, oy = 0;
+    if (!document.body.classList.contains('panel-off')) {
+      const r = aside.getBoundingClientRect();
+      if (r.width && r.height) { if (r.top > 40) oy = Math.max(0, h - r.top); else ox = Math.max(0, w - r.left); }
+    }
+    camera.aspect = (w + ox) / (h + oy);
+    if (ox || oy) camera.setViewOffset(w + ox, h + oy, ox, oy, w, h); else camera.clearViewOffset();
+    camera.updateProjectionMatrix(); forceFrames = 3;
+  }
+  window.addEventListener('resize', resize);
+  new ResizeObserver(resize).observe(aside);
+  function setPanel(open) {
+    document.body.classList.toggle('panel-off', !open); resize();
+    (open ? document.getElementById('panel-fold') : document.getElementById('panel-open')).focus({ preventScroll: true });
+  }
+  document.getElementById('panel-fold').onclick = () => setPanel(false);
+  document.getElementById('panel-open').onclick = () => setPanel(true);
+  resize();
+
+  // Label placement, after the EQ editor of the MIDI Tuning Synth (Christensen, Marks & Shieber 1995; D3-Labeler):
+  // each label has a list of slots around its point; the placement minimises the area of points and flowers the
+  // labels cover, label-on-label overlap, and a small penalty per step down the slot list. The synth searches every
+  // combination; with twenty-odd labels moving every frame this places them greedily in priority order (the
+  // selected chakra, then chakra names, roots, organs) and then lets each label move to its best slot given all
+  // the others, twice. A label pays to leave the slot it had in the last frame, so labels do not flicker while
+  // the view turns. A label placed away from its point gets a leader line back to it.
+  const v = new THREE.Vector3(), v2 = new THREE.Vector3(), camUp = new THREE.Vector3();
+  const W_POINT = 10, W_FLOWER = 1, W_LABEL = 4, W_RANK = 4, W_STAY = 60;
+  const NEAR = 8;                                       // slots 0-7 sit next to the point; the rest need a leader line
+  function slotsFor(l, g) {
+    const w = l.w, h = l.h, d = 0.7 * g, far = g + 26;
+    const right = [[g, -h / 2], [d, -h - d], [d, d]], left = [[-g - w, -h / 2], [-d - w, -h - d], [-d - w, d]];
+    const vert = [[-w / 2, -h - g], [-w / 2, g]];
+    const farR = [[far, -h / 2], [far, -h / 2 - 18], [far, h / 2 + 18 - h]], farL = farR.map(([x, y]) => [-x - w, y]);
+    const farV = [[-w / 2, -h - g - 22], [-w / 2, g + 22]];
+    return l.cls === 'organ' ? [...left, ...right, ...vert, ...farL, ...farR, ...farV]
+                             : [...right, ...left, ...vert, ...farR, ...farL, ...farV];
+  }
+  const area = (a, b) => { const x = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x), y = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y); return x > 0 && y > 0 ? x * y : 0; };
+  function placeLabels() {
+    if (labelsEl.hidden) return;
+    const w = stage.clientWidth, h = stage.clientHeight;
+    const toScreen = p => { v.copy(p).project(camera); return { x: (v.x + 1) / 2 * w, y: (1 - v.y) / 2 * h, z: v.z, nx: v.x, ny: v.y }; };
+    const shown = [];
+    // occlusion is worked out again only when the camera, the layers or the selection change
+    const key = camera.matrixWorld.elements.map(x => x.toFixed(5)).join() + Object.keys(groupOn).map(k => +groupOn[k]).join('') + current;
+    const reOcc = key !== occKey; occKey = key;
+    allLabels.forEach(l => {
+      if (l.pair) {                      // the pulmonary label follows the nearer of its two flowers
+        const cs = l.pair.map(id => chakras.find(x => x.id === id)).filter(x => x && x.openPos);
+        if (cs.length) {
+          const near = cs.reduce((a, b) => a.openPos.distanceTo(camera.position) <= b.openPos.distanceTo(camera.position) ? a : b);
+          if (l.fid !== near.id) { l.fid = near.id; l.pos = near.openPos; l.occluded = undefined; l.occPending = 0; l.slot = -1; }
+        }
+      }
+      // Points inside the body sit on or near a surface, so a camera move of a millimetre can flip the line-of-sight test
+      // back and forth. A label only changes between shown and hidden once the new answer has held for OCC_HOLD tests
+      // in a row; while a change is pending it is re-tested every frame, even with the camera still.
+      if (reOcc || l.occPending) {
+        const o = !(current && l.id === current) && (l.cls === 'chakra'
+          ? flowerPoints(l.fid || l.id).every(q => blocked(camera.position, q, 0.004, null, l.fid || l.id))   // hidden only if no part shows
+          // Hans 2 Oct 2026: flowers do not hide the labels of points on the skin (navel, anus, vaginal opening); the label stands aside with a line
+          : l.group === 'organ' ? blocked(camera.position, l.pos, 0.004, l.layer, l.layer === 'skin' ? '*' : null)
+          : !rootSeen(l.pos));
+        // a skin point seen through a flower: its label should stand clear of the flower, with a leader line (Hans 2 Oct 2026)
+        if (l.layer === 'skin') { const h = blocked(camera.position, l.pos, 0.004, l.layer, null, true); l.behindFlower = !!(h && h.group === 'flower'); }
+        if (l.occluded === undefined || o === l.occluded) { l.occluded = o; l.occPending = 0; }
+        else if (++l.occPending >= OCC_HOLD) { l.occluded = o; l.occPending = 0; }
+      }
+      const hide = l.occluded || (l.layer && layerGroups[l.layer] && !layerGroups[l.layer].visible) || (l.group === 'book' && !bookGroup.visible)
+        || (l.cls === 'chakra' && !tLblChakra.checked) || (l.cls === 'organ' && !tLblOrgan.checked);
+      const s = hide ? null : toScreen(l.pos);
+      if (!s || s.z > 1 || s.nx < -1.1 || s.nx > 1.1 || s.ny < -1.1 || s.ny > 1.1) { l.el.style.display = 'none'; l.slot = -1; return; }
+      l.el.style.display = ''; l.sx = s.x; l.sy = s.y; shown.push(l);
+    });
+    shown.forEach(l => { if (l.w == null) { l.w = l.el.offsetWidth; l.h = l.el.offsetHeight; } });   // measured once per text
+    // Obstacles: every shown point, and each flower's disc (its radius on screen, from a point one radius away)
+    camUp.setFromMatrixColumn(camera.matrixWorld, 1);
+    const flowerR = {}, obstacles = [];
+    chakras.forEach(c => {
+      if (!c.openPos) return;
+      const s = toScreen(c.openPos), e = toScreen(v2.copy(c.openPos).addScaledVector(camUp, fd(c) / 2));
+      const r = Math.hypot(e.x - s.x, e.y - s.y); flowerR[c.id] = r;
+      obstacles.push({ x: s.x - 0.8 * r, y: s.y - 0.8 * r, w: 1.6 * r, h: 1.6 * r, wt: W_FLOWER, flower: true });
+    });
+    shown.forEach(l => obstacles.push({ x: l.sx - 5, y: l.sy - 5, w: 10, h: 10, wt: W_POINT, own: l }));
+    // keep clear of the toolbar, and of the panel where it floats over the view
+    const sr = stage.getBoundingClientRect();
+    [document.querySelector('.toolbar'), document.body.classList.contains('panel-off') ? null : aside].forEach(el => {
+      if (!el) return; const b = el.getBoundingClientRect();
+      if (b.width && b.height) obstacles.push({ x: b.left - sr.left - 4, y: b.top - sr.top - 4, w: b.width + 8, h: b.height + 8, wt: W_POINT });
+    });
+    const rank = l => (current && l.id === current ? 0 : 3) + (l.cls === 'chakra' ? 0 : l.group === 'chakra' ? 1 : 2);
+    shown.sort((a, b) => rank(a) - rank(b));
+    shown.forEach(l => {
+      const g = l.cls === 'chakra' ? (flowerR[l.fid || l.id] || 6) + 4 : 7;
+      l.gap = g;
+      l.cands = slotsFor(l, g).map(([dx, dy], k) => {
+        const r = { x: Math.min(Math.max(l.sx + dx, 2), w - l.w - 2), y: Math.min(Math.max(l.sy + dy, 2), h - l.h - 2), w: l.w, h: l.h };
+        let own = W_RANK * k;
+        obstacles.forEach(o => { if (o.own !== l) own += o.wt * (o.flower && l.behindFlower ? 40 : 1) * area(r, o); });
+        return { r, own, k };
+      });
+    });
+    const cost = (l, c, placed) => {
+      let t = c.own + (l.slot >= 0 && c.k !== l.slot ? W_STAY : 0);
+      placed.forEach(m => { if (m !== l && m.at) t += W_LABEL * area(c.r, m.at.r); });
+      return t;
+    };
+    const placed = [];
+    shown.forEach(l => { l.at = null; });
+    shown.forEach(l => { let best = null, bc = Infinity; l.cands.forEach(c => { const t = cost(l, c, placed); if (t < bc) { bc = t; best = c; } }); l.at = best; placed.push(l); });
+    for (let pass = 0; pass < 2; pass++) shown.forEach(l => {
+      let best = l.at, bc = cost(l, l.at, placed);
+      l.cands.forEach(c => { const t = cost(l, c, placed); if (t < bc - 0.5) { bc = t; best = c; } });
+      l.at = best;
+    });
+    let lines = '';
+    shown.forEach(l => {
+      const c = l.at; l.slot = c.k;
+      const tf = `translate(${c.r.x.toFixed(1)}px, ${c.r.y.toFixed(1)}px)`; if (l.tf !== tf) { l.el.style.transform = tf; l.tf = tf; }
+      // crowded: still on top of another label or point after placement
+      let clash = 0; shown.forEach(m => { if (m !== l) clash += area(c.r, m.at.r) + area(c.r, { x: m.sx - 4, y: m.sy - 4, w: 8, h: 8 }); });
+      l.el.classList.toggle('crowded', clash > 0.25 * l.w * l.h && !(current && l.id === current));
+      // must be a true boolean: an organ label has no id, and toggle(cls, undefined) flips the class on every frame
+      l.el.classList.toggle('dim', !!(current && l.id && l.id !== current));
+      // leader line from the point (a chakra name: from its flower's rim) to the nearest point of the label
+      const qx = Math.min(Math.max(l.sx, c.r.x), c.r.x + c.r.w), qy = Math.min(Math.max(l.sy, c.r.y), c.r.y + c.r.h);
+      const dist = Math.hypot(qx - l.sx, qy - l.sy);
+      if (c.k >= NEAR || dist > l.gap + 8) {
+        const r0 = l.cls === 'chakra' ? Math.min(dist, flowerR[l.fid || l.id] || 0) : 3, ux = (qx - l.sx) / (dist || 1), uy = (qy - l.sy) / (dist || 1);
+        const op = l.el.classList.contains('dim') ? ' style="opacity:.35"' : '';
+        lines += `<line class="${l.cls === 'organ' ? 'organ' : ''}"${op} x1="${(l.sx + ux * r0).toFixed(1)}" y1="${(l.sy + uy * r0).toFixed(1)}" x2="${qx.toFixed(1)}" y2="${qy.toFixed(1)}"/>`;
+      }
+    });
+    if (lastLines !== lines) { leadersEl.innerHTML = lines; lastLines = lines; }
+  }
+  let lastLines = '', occKey = '';
+  const OCC_HOLD = 6;                    // frames a new shown/hidden answer must hold before a label switches
+  // A root is inside the spinal canal, so it counts as seen when its vertebra is: the first thing the line of
+  // sight meets is bone, disc or cord within 6 cm of the root and within 2 cm of its height (its own vertebra,
+  // not the one above or below).
+  const hitP = new THREE.Vector3();
+  function rootSeen(p) {
+    const h = blocked(camera.position, p, 0, null, null, true);
+    if (!h) return true;
+    if (h.group !== 'spine' && h.group !== 'discs' && h.group !== 'neuro') return false;
+    hitP.copy(p).sub(camera.position).setLength(h.t).add(camera.position);
+    return hitP.distanceTo(p) < 0.06 && Math.abs(hitP.y - p.y) < 0.02;
+  }
+  // A flower's centre and six points around it, two thirds of the way out
+  function flowerPoints(id) {
+    const c = chakras.find(x => x.id === id); if (!c || !c.openPos) return [];
+    if (!c.samples) {
+      const n = new THREE.Vector3(...c.normal).normalize(), u = new THREE.Vector3().crossVectors(n, Math.abs(n.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0)).normalize();
+      const w = new THREE.Vector3().crossVectors(n, u), r = fd(c) / 2 * 0.66;
+      c.samples = [c.openPos.clone()];
+      for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3; c.samples.push(c.openPos.clone().addScaledVector(u, r * Math.cos(a)).addScaledVector(w, r * Math.sin(a))); }
+    }
+    return c.samples;
+  }
+  // label widths change once the web font arrives
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => allLabels.forEach(l => { l.w = null; }));
+  // Draw only when something has changed. Redrawing the canvas every frame while nothing moves made Safari blink the
+  // HTML labels laid over it (Hans, 1 Oct 2026: the pituitary label flickered with the view at rest).
+  let lastFrameKey = '';
+  window.__frames = 0;                         // frames actually drawn (checked in testing)
+  const frameKey = () => camera.position.toArray().join() + camera.quaternion.toArray().join() + camera.projectionMatrix.elements.join()
+    + JSON.stringify(groupOn) + current + bookGroup.visible + tLblChakra.checked + tLblOrgan.checked + allLabels.length
+    + (layerGroups.arm_left ? +layerGroups.arm_left.visible + '' + +layerGroups.arm_right.visible : '');
+  function tick() {
+    if (anim) {
+      anim.t = Math.min(1, anim.t + 0.045);
+      const e = anim.t < 0.5 ? 2 * anim.t * anim.t : 1 - Math.pow(-2 * anim.t + 2, 2) / 2;
+      controls.target.lerpVectors(anim.fromT, anim.toT, e);
+      camera.position.lerpVectors(anim.fromP, anim.toP, e);
+      if (anim.t >= 1) anim = null;
+    }
+    controls.update();
+    updateArms();
+    const k = frameKey();
+    if (k !== lastFrameKey || forceFrames > 0 || anim || allLabels.some(l => l.occPending || (l.w == null && l.el.style.display !== 'none'))) {
+      renderer.render(scene, camera);
+      placeLabels();
+      lastFrameKey = k; if (forceFrames > 0) forceFrames--; window.__frames++;
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+
+  // Bodies: male (BodyParts3D) and female (Human Reference Atlas); each is fetched once, then rebuilt on a switch.
+  const bodyCache = {};
+  const decode = t => { const bin = atob(t.trim()); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u.buffer; };
+  function fetchBody(s) {
+    const base = s === 'f' ? 'anatomy3d/anatomy_f' : 'anatomy3d/anatomy';
+    return bodyCache[s] || (bodyCache[s] = Promise.all([fetch(base + '.json', { cache: 'no-cache' }).then(r => r.json()), fetch(base + '.bin', { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })])   // no-cache: the json and the mesh file must always be the same build
+      .catch(err => { delete bodyCache[s]; throw err; }));
+  }
+  function clearBody() {
+    if (current) { current = null; homeView = null; }
+    [anatomyGroup, chakraGroup, bookGroup].forEach(g => { g.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); g.clear(); });
+    labelItems.length = 0; labelsEl.innerHTML = ''; leadersEl.innerHTML = ''; lastLines = ''; allLabels = []; occBins = []; occKey = '';
+    document.getElementById('layers').innerHTML = '';
+    Object.keys(layerGroups).forEach(k => delete layerGroups[k]);
+    Object.keys(stemPts).forEach(k => delete stemPts[k]);
+    chakras.forEach(c => { c.group = null; });
+  }
+  function loadBody(s) {
+    const el = document.getElementById('loading');
+    el.setAttribute('data-i18n', 'loading'); el.textContent = T('loading'); el.hidden = false;
+    const keep = Object.assign({}, groupOn);
+    return fetchBody(s).then(([meta, buf]) => {
+      if (s !== sex) return;                       // a later switch has taken over
+      clearBody();
+      buildAnatomy(meta, buf); buildChakras(meta.anchors); buildLabels();
+      Object.keys(keep).forEach(k => { if (keep[k] === false && layerGroups[k]) {   // keep the layer choices
+        groupOn[k] = false; layerGroups[k].visible = false; const cb = document.getElementById('layer-' + k); if (cb) cb.checked = false; } });
+      applyLang(); el.hidden = true; forceFrames = 3;
+    }).catch(err => { el.removeAttribute('data-i18n'); el.textContent = T('loadfail') + ' (' + err.message + ')'; });
+  }
+  function setSex(s) {
+    if (s === sex) return;
+    sex = s; try { localStorage.setItem('chakra3d-sex', s); } catch (_) {}
+    applyLang(); loadBody(s);
+  }
+  document.getElementById('sex-m').onclick = () => setSex('m');
+  document.getElementById('sex-f').onclick = () => setSex('f');
+  loadBody(sex);
+  applyLang();
+})();
+</script>
+</html>

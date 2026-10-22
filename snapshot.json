@@ -1,0 +1,72 @@
+[
+  {
+    "path": "chakras/3d.html",
+    "sha256": "624f1c9336171d1339514539a98ff80492551ac27442ea1959ce2aa5f59ca10c",
+    "bytes": 117322
+  },
+  {
+    "path": "chakras/anatomy3d/anatomy.bin",
+    "sha256": "40c26a2f2c43503860dd5dfa40f2540c6c093b6fc93a929fa43ae69cc7b5b8d0",
+    "bytes": 4971684
+  },
+  {
+    "path": "chakras/anatomy3d/anatomy.json",
+    "sha256": "2bf044e860dd203d6eb5341598644bfe14d30f60d8fce020b947d2d63f202a6e",
+    "bytes": 6092
+  },
+  {
+    "path": "chakras/anatomy3d/anatomy_f.bin",
+    "sha256": "551d24e00ef267a87588fd712cf004b3c0a0fae0cc27d8a47c0fb7639c2efeb2",
+    "bytes": 3067076
+  },
+  {
+    "path": "chakras/anatomy3d/anatomy_f.json",
+    "sha256": "6020eb0c627b1ed718390c759a6b6e4d1e84885635ec03e69f67fa1f4dcb9e74",
+    "bytes": 8023
+  },
+  {
+    "path": "chakras/es.html",
+    "sha256": "f14def6c537dc07937cc6a7c29a1cd1103baaa79c07696a97de7cce1c3933c96",
+    "bytes": 472577
+  },
+  {
+    "path": "chakras/index.html",
+    "sha256": "d862231711959a4ec3d20d37d4af53fa9e0adceb8a1191ad9ea6dd1be135f31a",
+    "bytes": 630864
+  },
+  {
+    "path": "chakras/report_assets/chakra_3d_female_front.webp",
+    "sha256": "b60436fc7f4fe41d0bbd8c2a2b0cdc23e42026226d7ca24fc1c841cb9c915872",
+    "bytes": 104080
+  },
+  {
+    "path": "chakras/report_assets/chakra_3d_male_side.webp",
+    "sha256": "e4cfa4c2ad590cbe5cef06e94aad778276abbec9fd64cdf596e4a29ea5c87008",
+    "bytes": 90348
+  },
+  {
+    "path": "chakras/vi.html",
+    "sha256": "c51fdbdefc5bfbd0e5762a1e1a69b6910abc666782396546fa7a35ccf963b7c0",
+    "bytes": 718617
+  },
+  {
+    "path": "3d/index.html",
+    "sha256": "fd9c2f4391902d1ff699971b3cd9114ee7f8b442ac3335920bcdce0b84aca6d4",
+    "bytes": 117334
+  },
+  {
+    "path": "where/index.html",
+    "sha256": "3def9f742279d9850d913b73f4a9a630725995c31ca8a2805842fa60a6d96a73",
+    "bytes": 630866
+  },
+  {
+    "path": "donde/index.html",
+    "sha256": "50aa790865d01d44446fa451a5e7497dc59220a1580e5591ee272c59e67fb6ed",
+    "bytes": 472576
+  },
+  {
+    "path": "dau/index.html",
+    "sha256": "4cd0db785f9b47348185ae4cb58301d234cf04bbe8c036c0a94285b7a7ed3a87",
+    "bytes": 718618
+  }
+]
