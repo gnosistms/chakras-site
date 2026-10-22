@@ -1,5 +1,9 @@
 name: gnosis-chakras
 region: sgp
+domains:
+  - domain: chakras.gnosis-tms.com
+    type: PRIMARY
+    zone: gnosis-tms.com
 static_sites:
   - name: chakras
     git:

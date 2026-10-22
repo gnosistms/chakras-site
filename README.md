@@ -14,3 +14,20 @@ records the downloaded file hashes. Original attribution and licenses remain in
 the pages. All storage objects remain unchanged.
 
 Deploy the repository's `public/` directory as a DigitalOcean static site.
+
+## Live deployment
+
+DigitalOcean App Platform app: `dd59b203-dd86-4169-90f3-f33ab3f513c5`
+
+Starter URL: https://gnosis-chakras-cdgqn.ondigitalocean.app
+
+The public Git source does not use the DigitalOcean GitHub app connection.
+After committing and pushing future changes, deploy explicitly:
+
+```sh
+doctl apps update dd59b203-dd86-4169-90f3-f33ab3f513c5 --spec .do/app.yaml --update-sources
+```
+
+Only `chakras.gnosis-tms.com` is attached to this app. All original Spaces
+objects remain available. The previous CNAME target was
+`gnosiswebtools.sgp1.cdn.digitaloceanspaces.com.`
